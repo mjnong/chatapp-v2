@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+    plugins {
+        id("org.jetbrains.kotlin.android") version "1.9.24"
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+/** Project Name **/
+rootProject.name = "ChatApp V2"
+
+/** Applications **/
+include ':app'

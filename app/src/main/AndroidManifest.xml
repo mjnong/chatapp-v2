@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <application
+        android:largeHeap="true"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ChatAppV2">
+        <activity
+            android:name="com.edgeai.chatappv2.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="org.libsdl.app.SDLActivity"
+            android:label="SDL"
+            android:launchMode="singleTask"
+            android:exported="false"
+            >
+
+        </activity>
+        <activity
+            android:name="com.edgeai.chatappv2.Conversation"
+            android:windowSoftInputMode="adjustPan"
+            android:parentActivityName="com.edgeai.chatappv2.MainActivity" >
+        </activity>
+
+        <uses-native-library
+            android:name="libadsprpc.so"
+            android:required="false" />
+        <uses-native-library
+            android:name="libcdsprpc.so"
+            android:required="false" />
+    </application>
+</manifest>

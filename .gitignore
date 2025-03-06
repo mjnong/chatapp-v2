@@ -1,0 +1,14 @@
+# Developer properties
+local.properties
+.DS_Store
+.cxx
+.idea
+# Build
+build
+
+# Models
+app/src/main/assets/models/**
+!app/src/main/assets/models/.gitkeep
+app/src/main/assets/*tiny*
+app/src/main/assets/*base*
+app/src/main/assets/*small*

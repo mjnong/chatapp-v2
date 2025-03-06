@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">ChatApp V2</string>
+    <string name="chat_with_llama_3_2_3b">Chat with Llama 3.2 3B</string>
+    <string name="user_hint_msg">What\'s on your mind?</string>
+    <string name="sends_user_message">Sends user message</string>
+    <string name="chatapp">ChatApp V2</string>
+    <string name="load_whisper">Load Whisper</string>
+    <string name="loading_whisper">Loading Whisper…</string>
+    <string name="whisper_loaded">Whisper Loaded</string>
+    <string name="retry_whisper">Retry Whisper</string>
+    <string name="load_llama_model">Load LLAMA Model</string>
+    <string name="loading_llama">Loading LLAMA…</string>
+    <string name="type_a_message">Type a message…</string>
+    <string name="send_request">Send Request</string>
+    <string name="record_voice">Record Voice</string>
+    <string name="tap_the_button_below_to_load_the_llm_model_and_start_chatting">Tap the button below to load the LLM model and start chatting</string>
+    <string name="welcome_to_chatapp">Welcome to ChatApp V2</string>
+</resources>
