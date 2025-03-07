@@ -11,22 +11,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download release assets
+      - name: Download release assets (excluding source code)
         run: |
-          # Download all *.zip assets from the release tagged v0.0.1.
-          gh release download v0.0.1 --pattern '*.zip'
+          # List all asset names from the release that do NOT contain "Source code"
+          assets=$(gh release view v0.0.1 --json assets --jq '.assets[] | select(.name | index("Source code") | not) | .name')
+          echo "Assets to download:"
+          echo "$assets"
+          # Download each asset individually
+          for asset in $assets; do
+            echo "Downloading $asset"
+            gh release download v0.0.1 -p "$asset"
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract zip files
         run: |
-          mkdir extracted
+          mkdir -p extracted
           for file in *.zip; do
+            echo "Extracting $file..."
             unzip "$file" -d extracted/"${file%.*}"
           done
 
       - name: Upload extracted artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3.1.0
         with:
           name: extracted-files
           path: extracted/
