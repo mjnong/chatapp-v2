@@ -1,70 +1,80 @@
-name: Download and Extract Release Assets
+name: Architecture-Specific Build
 
 on:
   workflow_dispatch:
   pull_request:
 
 jobs:
-  download_and_extract:
+  prepare:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download release assets (excluding source code)
-        run: |
-          # List all asset names from the release that do NOT contain "Source code"
-          assets=$(gh release view v0.0.1 --json assets --jq '.assets[] | select(.name | index("Source code") | not) | .name')
-          echo "Assets to download:"
-          echo "$assets"
-          # Download each asset individually
-          for asset in $assets; do
-            echo "Downloading $asset"
-            gh release download v0.0.1 -p "$asset"
-          done
+      - name: Download release assets
+        run: gh release download v0.0.1 -p '*.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract zip files
+      - name: Extract and create component artifacts
         run: |
-          mkdir -p app/src/main/jniLibs/
-          for file in *.zip; do
-            echo "Extracting $file..."
-            unzip -j -o "$file" -d app/src/main/jniLibs/  # Added -j flag here
+          # Create temporary directories
+          mkdir -p {android-libs,hexagon-v75,hexagon-v79}
+
+          # Extract files from all zips (junk paths)
+          for zip in *.zip; do
+            unzip -j "$zip" 'aarch64-android/*' -d android-libs/
+            unzip -j "$zip" 'hexagon-v75/*' -d hexagon-v75/
+            unzip -j "$zip" 'hexagon-v79/*' -d hexagon-v79/
           done
 
-      - name: Upload extracted artifacts
+          # Upload as separate artifacts
+          echo "Component sizes:"
+          du -sh {android-libs,hexagon-v75,hexagon-v79}
+        shell: bash
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: extracted-files
-          path: app/src/main/jniLibs/
-
+          name: ${{ matrix.component }}
+          path: |
+            android-libs/
+            hexagon-v75/
+            hexagon-v79/
+        strategy:
+          matrix:
+            component: ['android-libs', 'hexagon-v75', 'hexagon-v79']
 
   build:
-    needs: download_and_extract
+    needs: prepare
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        architecture: ["gen3", "8elite"]
-        include:
-          - architecture: gen3
-            hexagon_files: app/src/main/jniLibs/
-          - architecture: 8elite
-            hexagon_files: app/src/main/jniLibs/
+        arch_config:
+          - name: gen3
+            hexagon: hexagon-v75
+          - name: 8elite
+            hexagon: hexagon-v79
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Download extracted artifacts
+
+      - name: Download required artifacts
         uses: actions/download-artifact@v4
         with:
-          name: extracted-files
+          name: android-libs
           path: app/src/main/jniLibs/
-      
-      - name: Build for ${{ matrix.architecture }}
+
+      - name: Download hexagon files
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.arch_config.hexagon }}
+          path: app/src/main/jniLibs/
+
+      - name: Verify files
         run: |
-          echo "Building for ${{ matrix.architecture }} using hexagon and aarch64-android files under ${{ matrix.hexagon_files }}"
-          # Example build command using the hexagon file
-          echo "Using common aarch64-android files from extracted/aarch64-android"
-          # Your build command here
-          ls app/src/main/jniLibs/
+          echo "Building for ${{ matrix.arch_config.name }}"
+          echo "jniLibs contents:"
+          ls -l app/src/main/jniLibs/
+          echo "Total files: $(find app/src/main/jniLibs/ -type f | wc -l)"
