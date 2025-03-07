@@ -59,7 +59,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: extracted-files
-          path: extracted/
+          path: app/src/main/jniLibs/
       
       - name: Build for ${{ matrix.architecture }}
         run: |
