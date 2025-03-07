@@ -19,18 +19,18 @@ jobs:
       - name: Extract and create component artifacts
         run: |
           # Create temporary directories
-          mkdir -p {android-libs,hexagon-v75,hexagon-v79}
+          mkdir -p {aarch64-android,hexagon-v75,hexagon-v79}
 
           # Extract files from all zips (junk paths)
           for zip in *.zip; do
-            unzip -j "$zip" 'aarch64-android/*' -d android-libs/
+            unzip -j "$zip" 'aarch64-android/*' -d aarch64-android/
             unzip -j "$zip" 'hexagon-v75/*' -d hexagon-v75/
             unzip -j "$zip" 'hexagon-v79/*' -d hexagon-v79/
           done
 
           # Upload as separate artifacts
           echo "Component sizes:"
-          du -sh {android-libs,hexagon-v75,hexagon-v79}
+          du -sh {aarch64-android,hexagon-v75,hexagon-v79}
         shell: bash
 
       - name: Upload artifacts
@@ -38,7 +38,7 @@ jobs:
         with:
           name: ${{ matrix.component }}
           path: |
-            android-libs/
+            aarch64-android/
             hexagon-v75/
             hexagon-v79/
 
@@ -60,7 +60,7 @@ jobs:
       - name: Download required artifacts
         uses: actions/download-artifact@v4
         with:
-          name: android-libs
+          name: aarch64-android
           path: app/src/main/jniLibs/
 
       - name: Download hexagon files
