@@ -27,10 +27,10 @@ jobs:
 
       - name: Extract zip files
         run: |
-          mkdir -p extracted
+          mkdir -p app/src/main/jniLibs/
           for file in *.zip; do
             echo "Extracting $file..."
-            unzip "$file" -d extracted/"${file%.*}"
+            unzip "$file" -d app/src/main/jniLibs/"${file%.*}"
           done
 
       - name: Upload extracted artifacts
