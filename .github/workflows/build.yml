@@ -48,9 +48,9 @@ jobs:
         architecture: ["gen3", "8elite"]
         include:
           - architecture: gen3
-            hexagon_files: extracted/hexagon-v75
+            hexagon_files: app/src/main/jniLibs/hexagon-v75
           - architecture: 8elite
-            hexagon_files: extracted/hexagon-v79
+            hexagon_files: app/src/main/jniLibs/hexagon-v79
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
