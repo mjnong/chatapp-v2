@@ -30,7 +30,7 @@ jobs:
           mkdir -p app/src/main/jniLibs/
           for file in *.zip; do
             echo "Extracting $file..."
-            unzip -o "$file" -d app/src/main/jniLibs/
+            unzip -j -o "$file" -d app/src/main/jniLibs/  # Added -j flag here
           done
 
       - name: Upload extracted artifacts
