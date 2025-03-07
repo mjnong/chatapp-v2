@@ -30,7 +30,7 @@ jobs:
           mkdir -p app/src/main/jniLibs/
           for file in *.zip; do
             echo "Extracting $file..."
-            unzip "$file" -d app/src/main/jniLibs/"${file%.*}"
+            unzip -o "$file" -d app/src/main/jniLibs/
           done
 
       - name: Upload extracted artifacts
@@ -48,9 +48,9 @@ jobs:
         architecture: ["gen3", "8elite"]
         include:
           - architecture: gen3
-            hexagon_files: app/src/main/jniLibs/hexagon-v75
+            hexagon_files: app/src/main/jniLibs/
           - architecture: 8elite
-            hexagon_files: app/src/main/jniLibs/hexagon-v79
+            hexagon_files: app/src/main/jniLibs/
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -63,7 +63,8 @@ jobs:
       
       - name: Build for ${{ matrix.architecture }}
         run: |
-          echo "Building for ${{ matrix.architecture }} using ${{ matrix.hexagon_files }}"
+          echo "Building for ${{ matrix.architecture }} using hexagon and aarch64-android files under ${{ matrix.hexagon_files }}"
           # Example build command using the hexagon file
           echo "Using common aarch64-android files from extracted/aarch64-android"
           # Your build command here
+          cd app/src/main/jniLibs/
