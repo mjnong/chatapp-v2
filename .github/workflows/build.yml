@@ -67,4 +67,4 @@ jobs:
           # Example build command using the hexagon file
           echo "Using common aarch64-android files from extracted/aarch64-android"
           # Your build command here
-          cd app/src/main/jniLibs/
+          ls app/src/main/jniLibs/
