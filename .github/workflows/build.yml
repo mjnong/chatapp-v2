@@ -1,0 +1,31 @@
+name: Download and Extract Release Assets
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download_and_extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download release assets
+        run: |
+          # Download all *.zip assets from release tag v0.0.1.
+          gh release download v0.0.1 --pattern '*.zip'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract zip files
+        run: |
+          mkdir extracted
+          for file in *.zip; do
+            unzip "$file" -d extracted/"${file%.*}"
+          done
+
+      - name: Upload extracted artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: extracted-files
+          path: extracted/
