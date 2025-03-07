@@ -41,9 +41,6 @@ jobs:
             android-libs/
             hexagon-v75/
             hexagon-v79/
-        strategy:
-          matrix:
-            component: ['android-libs', 'hexagon-v75', 'hexagon-v79']
 
   build:
     needs: prepare
