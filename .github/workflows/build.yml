@@ -2,6 +2,7 @@ name: Download and Extract Release Assets
 
 on:
   workflow_dispatch:
+  pull_request:
 
 jobs:
   download_and_extract:
@@ -12,7 +13,7 @@ jobs:
 
       - name: Download release assets
         run: |
-          # Download all *.zip assets from release tag v0.0.1.
+          # Download all *.zip assets from the release tagged v0.0.1.
           gh release download v0.0.1 --pattern '*.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
