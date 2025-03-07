@@ -38,3 +38,32 @@ jobs:
         with:
           name: extracted-files
           path: extracted/
+
+
+  build:
+    needs: download_and_extract
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: ["gen3", "8elite"]
+        include:
+          - architecture: gen3
+            hexagon_files: extracted/hexagon-v75
+          - architecture: 8elite
+            hexagon_files: extracted/hexagon-v79
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Download extracted artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: extracted-files
+          path: extracted/
+      
+      - name: Build for ${{ matrix.architecture }}
+        run: |
+          echo "Building for ${{ matrix.architecture }} using ${{ matrix.hexagon_files }}"
+          # Example build command using the hexagon file
+          echo "Using common aarch64-android files from extracted/aarch64-android"
+          # Your build command here
