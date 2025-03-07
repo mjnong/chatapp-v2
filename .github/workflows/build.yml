@@ -24,8 +24,8 @@ jobs:
           # Extract files from all zips (junk paths)
           for zip in *.zip; do
             unzip -j "$zip" 'aarch64-android/*' -d aarch64-android/
-            unzip -j "$zip" 'hexagon-v75/unsigned/' -d hexagon-v75/
-            unzip -j "$zip" 'hexagon-v79/unsigned/' -d hexagon-v79/
+            unzip -j "$zip" 'hexagon-v75/*' -d hexagon-v75/
+            unzip -j "$zip" 'hexagon-v79/*' -d hexagon-v79/
           done
 
           # Upload as separate artifacts
