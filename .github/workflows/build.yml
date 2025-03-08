@@ -12,16 +12,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download release assets
-        run: |
-          # List all asset names from the release that do NOT contain "Source code"
-          assets=$(gh release view v0.0.1 --json assets --jq '.assets[] | select(.name | index("Source code") | not) | .name')
-          echo "Assets to download:"
-          echo "$assets"
-          # Download each asset individually
-          for asset in $assets; do
-            echo "Downloading $asset"
-            gh release download v0.0.1 -p "$asset"
-          done
+        run: gh release download v0.0.1 -p '*.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -31,10 +22,13 @@ jobs:
           mkdir -p {aarch64-android,hexagon-v75,hexagon-v79}
 
           # Extract files from all zips (junk paths)
-          for file in *.zip; do
-            unzip -j -o "$file" 'aarch64-android/*' -d aarch64-android/
-            unzip -j -o "$file" 'hexagon-v75/*' -d hexagon-v75/
-            unzip -j -o "$file" 'hexagon-v79/*' -d hexagon-v79/
+          for zip in *.zip; do
+            unzip -l aarch64-android.zip
+            unzip -l hexagon-v75.zip
+            unzip -l hexagon-v79.zip
+            unzip -j "$zip" 'aarch64-android/*' -d aarch64-android/
+            unzip -j "$zip" 'hexagon-v75/*' -d hexagon-v75/
+            unzip -j "$zip" 'hexagon-v79/*' -d hexagon-v79/
           done
 
           # Upload as separate artifacts
