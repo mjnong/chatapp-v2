@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.component }}
+          name: components
           path: |
             aarch64-android/
             hexagon-v75/
