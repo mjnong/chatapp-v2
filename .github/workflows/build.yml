@@ -41,14 +41,23 @@ jobs:
           du -sh {aarch64-android,hexagon-v75,hexagon-v79}
         shell: bash
 
-      - name: Upload artifacts
+      - name: Upload aarch64-android artifact
         uses: actions/upload-artifact@v4
         with:
-          name: components
-          path: |
-            aarch64-android/
-            hexagon-v75/
-            hexagon-v79/
+          name: aarch64-android
+          path: aarch64-android/
+
+      - name: Upload hexagon-v75 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexagon-v75
+          path: hexagon-v75/
+
+      - name: Upload hexagon-v79 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexagon-v79
+          path: hexagon-v79/
 
   build:
     needs: prepare
