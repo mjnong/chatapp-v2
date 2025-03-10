@@ -131,8 +131,8 @@ jobs:
       - name: Build Dev Environment & JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
         run: |
-          make ci-env
           sudo apt-get update && apt-get install -y ninja-build
+          make ci-env
           make build jni
 
       # - name: Copy Shared Libraries to Target Directory
