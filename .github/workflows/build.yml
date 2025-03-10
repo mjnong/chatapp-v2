@@ -134,7 +134,9 @@ jobs:
 
       - name: Build JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
-        run: make build jni
+        run: |
+          apt-get install -y ninja-build
+          make build jni
 
       - name: Copy Shared Libraries to Target Directory
         run: |
