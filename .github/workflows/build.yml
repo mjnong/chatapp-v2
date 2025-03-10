@@ -130,6 +130,7 @@ jobs:
         run: |
           sed -i 's/^ARG QNN_RUNTIME=.*/ARG QNN_RUNTIME=qnn-runtime-2.31.0.aar/' scripts/Dockerfile
           sed -i 's/^ARG QNN_TFLITE_DELEGATE=.*/ARG QNN_TFLITE_DELEGATE=qnn-litert-delegate-2.31.0.aar/' scripts/Dockerfile
+          sed -i 's|/2\.27\.0/|/2.31.0/|g' scripts/dev_env.sh
 
       - name: Build Dev Environment
         working-directory: WhisperKitAndroid
