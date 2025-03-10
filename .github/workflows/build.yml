@@ -106,18 +106,18 @@ jobs:
           # Adjust the search pattern if your file uses a different name.
           sed -i 's/Java_com_argmaxinc_WhisperKitNative/Java_com_edgeai_chatappv2_WhisperKitNative/g' jni/NativeWhisperKit.cpp
 
-      - name: Update TranscribeTask.cpp for Correct Paths
-        working-directory: WhisperKitAndroid
-        run: |
-          replacement=$(cat <<'EOF'
-        #if (JNI_BUILD)
-        #define TRANSCRIBE_TASK_TFLITE_ROOT_PATH "/data/user/0/com.edgeai.chatappv2/files"
-        #define TRANSCRIBE_TASK_DEFAULT_LIB_DIR "/data/user/0/com.edgeai/chatappv2/lib"
-        #define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR "/data/user/0/com.edgeai/chatappv2/cache"
-        EOF
-            )
-          sed -i "/#if (JNI_BUILD)/,/#elif/ c\\
-        $replacement" Whisperkit/src/TranscribeTask.cpp
+      # - name: Update TranscribeTask.cpp for Correct Paths
+      #   working-directory: WhisperKitAndroid
+      #   run: |
+      #     replacement=$(cat <<'EOF'
+      # #if (JNI_BUILD)
+      # #define TRANSCRIBE_TASK_TFLITE_ROOT_PATH "/data/user/0/com.edgeai.chatappv2/files"
+      # #define TRANSCRIBE_TASK_DEFAULT_LIB_DIR "/data/user/0/com.edgeai/chatappv2/lib"
+      # #define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR "/data/user/0/com.edgeai/chatappv2/cache"
+      # EOF
+      #     )
+      #     sed -i "/#if (JNI_BUILD)/,/#elif/ c\\
+      #   $replacement" Whisperkit/src/TranscribeTask.cpp
       - name: Update QNN SDK Version in dev_env.sh
         working-directory: WhisperKitAndroid
         run: |
