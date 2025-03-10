@@ -121,8 +121,11 @@ jobs:
       - name: Update QNN SDK Version in dev_env.sh and Dockerfile
         working-directory: WhisperKitAndroid
         run: |
-          sed -i -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31.0.aar/g' \
-            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31.0.aar/g' \
+          sed -i \
+            -e 's#/qnn-runtime/2\.27\.0/qnn-runtime-2\.27\.0\.aar#/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar#g' \
+            -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar#g' \
+            -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31\.0\.aar/g' \
+            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31\.0\.aar/g' \
             scripts/dev_env.sh scripts/Dockerfile
 
       - name: Build Dev Environment
