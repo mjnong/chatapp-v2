@@ -92,3 +92,64 @@ jobs:
           echo "jniLibs contents:"
           ls -l app/src/main/jniLibs/
           echo "Total files: $(find app/src/main/jniLibs/ -type f | wc -l)"
+
+  build-whisperkit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone WhisperKitAndroid Repository
+        run: git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+
+      - name: Update NativeWhisperKit.cpp Function Names
+        working-directory: WhisperKitAndroid
+        run: |
+          # Replace the old JNI function prefix with the project-specific prefix.
+          # Adjust the search pattern if your file uses a different name.
+          sed -i 's/Java_com_argmaxinc_WhisperKitNative/Java_com_edgeai_chatappv2_WhisperKitNative/g' jni/NativeWhisperKit.cpp
+
+      - name: Update TranscribeTask.cpp for Correct Paths
+        working-directory: WhisperKitAndroid
+        run: |
+          # Update the JNI_BUILD block with the correct file, lib, and cache paths.
+          sed -i '/#if (JNI_BUILD)/,/#elif/ c\
+#if (JNI_BUILD)\
+#define TRANSCRIBE_TASK_TFLITE_ROOT_PATH    "/data/user/0/com.edgeai.chatappv2/files"\
+#define TRANSCRIBE_TASK_DEFAULT_LIB_DIR     "/data/user/0/com.edgeai.chatappv2/lib"\
+#define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR   "/data/user/0/com.edgeai.chatappv2/cache"' Whipserkit/src/TranscribeTask.cpp
+
+      - name: Update QNN SDK Version in dev_env.sh
+        working-directory: WhisperKitAndroid
+        run: |
+          sed -i 's|qnn-runtime-[0-9.]*.aar|qnn-runtime-2.31.0.aar|g' scripts/dev_env.sh
+          sed -i 's|qnn-litert-delegate-[0-9.]*.aar|qnn-litert-delegate-2.31.0.aar|g' scripts/dev_env.sh
+
+      - name: Update QNN SDK Version in Dockerfile
+        working-directory: WhisperKitAndroid
+        run: |
+          sed -i 's/^ARG QNN_RUNTIME=.*/ARG QNN_RUNTIME=qnn-runtime-2.31.0.aar/' scripts/Dockerfile
+          sed -i 's/^ARG QNN_TFLITE_DELEGATE=.*/ARG QNN_TFLITE_DELEGATE=qnn-litert-delegate-2.31.0.aar/' scripts/Dockerfile
+
+      - name: Build Dev Environment
+        working-directory: WhisperKitAndroid
+        run: make env
+
+      - name: Build JNI Libraries (.so Files)
+        working-directory: WhisperKitAndroid
+        run: make build jni
+
+      - name: Copy Shared Libraries to Target Directory
+        run: |
+          # Create the target directory (adjust permissions if necessary)
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
+          cd WhisperKitAndroid
+          # Copy libraries from external/libs/android/
+          sudo cp external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libqnn_delegate_jni.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libSDL3.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libswresample.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libtensorflowlite.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          # Copy libraries from build/android/
+          sudo cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          sudo cp build/android/libnative-whisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
