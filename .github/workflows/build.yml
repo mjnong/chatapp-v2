@@ -130,7 +130,7 @@ jobs:
 
       - name: Build Dev Environment
         working-directory: WhisperKitAndroid
-        run: make env
+        run: make ci-env
 
       - name: Build JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
