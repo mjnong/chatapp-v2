@@ -123,6 +123,7 @@ jobs:
         run: |
           sed -i 's|qnn-runtime-[0-9.]*.aar|qnn-runtime-2.31.0.aar|g' scripts/dev_env.sh
           sed -i 's|qnn-litert-delegate-[0-9.]*.aar|qnn-litert-delegate-2.31.0.aar|g' scripts/dev_env.sh
+          sed -i 's|/2\.27\.0/|/2.31.0/|g' scripts/dev_env.sh
 
       - name: Update QNN SDK Version in Dockerfile
         working-directory: WhisperKitAndroid
