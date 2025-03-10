@@ -118,19 +118,12 @@ jobs:
       #     )
       #     sed -i "/#if (JNI_BUILD)/,/#elif/ c\\
       #   $replacement" Whisperkit/src/TranscribeTask.cpp
-      - name: Update QNN SDK Version in dev_env.sh
+      - name: Update QNN SDK Version in dev_env.sh and Dockerfile
         working-directory: WhisperKitAndroid
         run: |
-          sed -i 's|qnn-runtime-[0-9.]*.aar|qnn-runtime-2.31.0.aar|g' scripts/dev_env.sh
-          sed -i 's|qnn-litert-delegate-[0-9.]*.aar|qnn-litert-delegate-2.31.0.aar|g' scripts/dev_env.sh
-          sed -i 's|/2\.27\.0/|/2.31.0/|g' scripts/dev_env.sh
-
-      - name: Update QNN SDK Version in Dockerfile
-        working-directory: WhisperKitAndroid
-        run: |
-          sed -i 's/^ARG QNN_RUNTIME=.*/ARG QNN_RUNTIME=qnn-runtime-2.31.0.aar/' scripts/Dockerfile
-          sed -i 's/^ARG QNN_TFLITE_DELEGATE=.*/ARG QNN_TFLITE_DELEGATE=qnn-litert-delegate-2.31.0.aar/' scripts/Dockerfile
-          sed -i 's|/2\.27\.0/|/2.31.0/|g' scripts/dev_env.sh
+          sed -i -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31.0.aar/g' \
+            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31.0.aar/g' \
+            scripts/dev_env.sh scripts/Dockerfile
 
       - name: Build Dev Environment
         working-directory: WhisperKitAndroid
