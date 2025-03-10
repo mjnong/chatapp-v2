@@ -109,13 +109,15 @@ jobs:
       - name: Update TranscribeTask.cpp for Correct Paths
         working-directory: WhisperKitAndroid
         run: |
-          # Update the JNI_BUILD block with the correct file, lib, and cache paths.
-          sed -i '/#if (JNI_BUILD)/,/#elif/ c\
-#if (JNI_BUILD)\
-#define TRANSCRIBE_TASK_TFLITE_ROOT_PATH    "/data/user/0/com.edgeai.chatappv2/files"\
-#define TRANSCRIBE_TASK_DEFAULT_LIB_DIR     "/data/user/0/com.edgeai.chatappv2/lib"\
-#define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR   "/data/user/0/com.edgeai.chatappv2/cache"' Whipserkit/src/TranscribeTask.cpp
-
+          replacement=$(cat <<'EOF'
+        #if (JNI_BUILD)
+        #define TRANSCRIBE_TASK_TFLITE_ROOT_PATH "/data/user/0/com.edgeai.chatappv2/files"
+        #define TRANSCRIBE_TASK_DEFAULT_LIB_DIR "/data/user/0/com.edgeai/chatappv2/lib"
+        #define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR "/data/user/0/com.edgeai/chatappv2/cache"
+        EOF
+            )
+          sed -i "/#if (JNI_BUILD)/,/#elif/ c\\
+        $replacement" Whisperkit/src/TranscribeTask.cpp
       - name: Update QNN SDK Version in dev_env.sh
         working-directory: WhisperKitAndroid
         run: |
