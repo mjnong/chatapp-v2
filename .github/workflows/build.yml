@@ -128,30 +128,26 @@ jobs:
             -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31\.0\.aar/g' \
             scripts/dev_env.sh scripts/Dockerfile
 
-      - name: Build Dev Environment
-        working-directory: WhisperKitAndroid
-        run: make ci-env
-
-      - name: Build JNI Libraries (.so Files)
+      - name: Build Dev Environment & JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
         run: |
-          sudo apt-get install -y ninja-build
+          make ci-env
           make build jni
 
-      - name: Copy Shared Libraries to Target Directory
-        run: |
-          # Create the target directory (adjust permissions if necessary)
-          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
-          cd WhisperKitAndroid
-          # Copy libraries from external/libs/android/
-          sudo cp external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libqnn_delegate_jni.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libSDL3.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libswresample.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libtensorflowlite.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          # Copy libraries from build/android/
-          sudo cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-          sudo cp build/android/libnative-whisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      # - name: Copy Shared Libraries to Target Directory
+      #   run: |
+      #     # Create the target directory (adjust permissions if necessary)
+      #     sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
+      #     cd WhisperKitAndroid
+      #     # Copy libraries from external/libs/android/
+      #     sudo cp external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libqnn_delegate_jni.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libSDL3.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libswresample.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libtensorflowlite.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     # Copy libraries from build/android/
+      #     sudo cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+      #     sudo cp build/android/libnative-whisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
