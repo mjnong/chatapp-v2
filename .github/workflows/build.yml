@@ -11,6 +11,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Clone the external repository
+      - name: create path
+        run: |
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
+
+
       # Cache the extracted artifact directories
       - name: Cache architecture artifacts
         id: cache-artifacts
