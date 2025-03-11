@@ -91,7 +91,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Clone the external repository
+      # Clone the external repository and ensure the target directory exists.
       - name: Clone WhisperKitAndroid Repository
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
@@ -127,7 +127,7 @@ jobs:
             -e 's#/qnn-runtime/2\.27\.0/qnn-runtime-2\.27\.0\.aar#/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar#g' \
             -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar#g' \
             -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31\.0\.aar/g' \
-            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31\.0\.aar/g' \
+            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2\.31\.0\.aar/g' \
             scripts/dev_env.sh scripts/Dockerfile
 
       # Build the dev environment and JNI libraries if either cache is missing
@@ -205,8 +205,6 @@ jobs:
 
       - name: List contents of ${{ matrix.hexagon }} folder
         run: |
-          ls -la ${{ matrix.hexagon }}
-          ls /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
           ls /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
           ls /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
 
