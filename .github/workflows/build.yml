@@ -11,17 +11,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Cache the extracted artifact directories
+      - name: Cache architecture artifacts
+        id: cache-artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            aarch64-android
+            hexagon-v75
+            hexagon-v79
+          # Use a cache key that makes sense for your use case.
+          # For example, you might use the branch name or a hash of the release tag.
+          key: ${{ runner.os }}-architecture-artifacts-${{ github.ref }}
+
+      # Only download the release assets if the cache was not found
       - name: Download release assets
+        if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: gh release download v0.0.1 -p '*.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Only extract the artifacts if the cache was not found
       - name: Extract and create component artifacts
+        if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: |
           # Create temporary directories
           mkdir -p {aarch64-android,hexagon-v75,hexagon-v79}
-
-          # Extract files from all zips (junk paths)
+  
+          # Extract files from the downloaded zips
           for zip in *.zip; do
             case "$zip" in
               aarch64-android.zip)
@@ -35,12 +52,12 @@ jobs:
                 ;;
             esac
           done
-
-          # Upload as separate artifacts
+  
+          # Display component sizes
           echo "Component sizes:"
           du -sh {aarch64-android,hexagon-v75,hexagon-v79}
-        shell: bash
 
+      # Regardless of cache, upload the artifacts so that downstream jobs can use them
       - name: Upload aarch64-android artifact
         uses: actions/upload-artifact@v4
         with:
@@ -59,108 +76,64 @@ jobs:
           name: hexagon-v79
           path: hexagon-v79/
 
-  build:
-    needs: prepare
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch_config:
-          - name: gen3
-            hexagon: hexagon-v75
-          - name: 8elite
-            hexagon: hexagon-v79
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download required artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: aarch64-android
-          path: app/src/main/jniLibs/
-
-      - name: Download hexagon files
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.arch_config.hexagon }}
-          path: app/src/main/jniLibs/
-
-      - name: Verify files
-        run: |
-          echo "Building for ${{ matrix.arch_config.name }}"
-          echo "jniLibs contents:"
-          ls -l app/src/main/jniLibs/
-          echo "Total files: $(find app/src/main/jniLibs/ -type f | wc -l)"
-
   build-whisperkit:
     runs-on: ubuntu-latest
     steps:
+      # Clone the external repository
       - name: Clone WhisperKitAndroid Repository
         run: git clone https://github.com/argmaxinc/WhisperKitAndroid.git
 
+      # Restore cached jni-libs based on changes in the JNI source file
+      - name: Restore cached jni-libs
+        id: cache-jni-libs
+        uses: actions/cache@v3
+        with:
+          path: WhisperKitAndroid/external/libs/android
+          key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
+
+      # Restore cached whisperkit-libs based on changes in the build environment config
+      - name: Restore cached whisperkit-libs
+        id: cache-whisperkit-libs
+        uses: actions/cache@v3
+        with:
+          path: WhisperKitAndroid/build/android
+          key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
+
+      # Update JNI function names as needed
       - name: Update NativeWhisperKit.cpp Function Names
         working-directory: WhisperKitAndroid
         run: |
-          # Replace the old JNI function prefix with the project-specific prefix.
-          # Adjust the search pattern if your file uses a different name.
           sed -i 's/Java_com_argmaxinc_WhisperKitNative/Java_com_edgeai_chatappv2_WhisperKitNative/g' jni/NativeWhisperKit.cpp
 
-      # - name: Update TranscribeTask.cpp for Correct Paths
-      #   working-directory: WhisperKitAndroid
-      #   run: |
-      #     replacement=$(cat <<'EOF'
-      # #if (JNI_BUILD)
-      # #define TRANSCRIBE_TASK_TFLITE_ROOT_PATH "/data/user/0/com.edgeai.chatappv2/files"
-      # #define TRANSCRIBE_TASK_DEFAULT_LIB_DIR "/data/user/0/com.edgeai/chatappv2/lib"
-      # #define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR "/data/user/0/com.edgeai/chatappv2/cache"
-      # EOF
-      #     )
-      #     sed -i "/#if (JNI_BUILD)/,/#elif/ c\\
-      #   $replacement" Whisperkit/src/TranscribeTask.cpp
+      # Update QNN SDK versions in the dev environment scripts and Dockerfile
       - name: Update QNN SDK Version in dev_env.sh and Dockerfile
         working-directory: WhisperKitAndroid
         run: |
           sed -i \
             -e 's#/qnn-runtime/2\.27\.0/qnn-runtime-2\.27\.0\.aar#/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar#g' \
-            -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar#g' \
-            -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31\.0\.aar/g' \
-            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31\.0\.aar/g' \
+            -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-tflite-delegate/2\.31\.0/qnn-tflite-delegate-2.31.0.aar#g' \
             scripts/dev_env.sh scripts/Dockerfile
 
+      # Build the dev environment and JNI libraries if either cache is missing
       - name: Build Dev Environment & JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
+        if: steps.cache-jni-libs.outputs.cache-hit != 'true' || steps.cache-whisperkit-libs.outputs.cache-hit != 'true'
         run: |
           make ci-env
           docker exec axie_tflite make build jni
 
-      - name: Upload jni-libs artifact
-        uses: actions/upload-artifact@v4
+      # Save updated jni-libs to cache if they were rebuilt
+      - name: Save jni-libs to cache
+        if: steps.cache-jni-libs.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
         with:
-          name: jni-libs
-          path: ./external/libs/android
+          path: WhisperKitAndroid/external/libs/android
+          key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
-      - name: Upload whisperkit-libs artifacts
-        uses: actions/upload-artifact@v4
+      # Save updated whisperkit-libs to cache if they were rebuilt
+      - name: Save whisperkit-libs to cache
+        if: steps.cache-whisperkit-libs.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
         with:
-          name: whisperkit-libs
-          path: ./build/android/
-
-
-      # - name: Copy Shared Libraries to Target Directory
-      #   run: |
-      #     # Create the target directory (adjust permissions if necessary)
-      #     sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
-      #     cd WhisperKitAndroid
-      #     # Copy libraries from external/libs/android/
-      #     sudo cp external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libqnn_delegate_jni.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libSDL3.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libswresample.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libtensorflowlite.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     # Copy libraries from build/android/
-      #     sudo cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
-      #     sudo cp build/android/libnative-whisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          path: WhisperKitAndroid/build/android
+          key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
