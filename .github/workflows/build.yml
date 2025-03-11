@@ -121,6 +121,7 @@ jobs:
         run: |
           make ci-env
           docker exec axie_tflite make build jni
+          docker exec axie_tflite ls .
 
       # Save updated jni-libs to cache if they were rebuilt
       - name: Save jni-libs to cache
