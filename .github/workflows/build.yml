@@ -147,3 +147,17 @@ jobs:
         run: |
           ls ./external/libs/android
           ls ./build/android
+
+      - name: Copy shared libraries to target directory
+        run: |
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
+          cp WhisperKitAndroid/external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libqnn_delegate_jni.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libSDL3.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libswresample.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libtensorflowlite.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+          cp WhisperKitAndroid/build/android/libnative-whisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
