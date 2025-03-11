@@ -99,19 +99,21 @@ jobs:
           path: WhisperKitAndroid/build/android
           key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
 
-      # Update JNI function names as needed
       - name: Update NativeWhisperKit.cpp Function Names
         working-directory: WhisperKitAndroid
         run: |
+          # Replace the old JNI function prefix with the project-specific prefix.
+          # Adjust the search pattern if your file uses a different name.
           sed -i 's/Java_com_argmaxinc_WhisperKitNative/Java_com_edgeai_chatappv2_WhisperKitNative/g' jni/NativeWhisperKit.cpp
 
-      # Update QNN SDK versions in the dev environment scripts and Dockerfile
       - name: Update QNN SDK Version in dev_env.sh and Dockerfile
         working-directory: WhisperKitAndroid
         run: |
           sed -i \
             -e 's#/qnn-runtime/2\.27\.0/qnn-runtime-2\.27\.0\.aar#/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar#g' \
-            -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-tflite-delegate/2\.31\.0/qnn-tflite-delegate-2.31.0.aar#g' \
+            -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar#g' \
+            -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31\.0\.aar/g' \
+            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31\.0\.aar/g' \
             scripts/dev_env.sh scripts/Dockerfile
 
       # Build the dev environment and JNI libraries if either cache is missing
