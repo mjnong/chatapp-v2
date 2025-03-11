@@ -164,5 +164,6 @@ jobs:
           cp build/android/libnative-whisper.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
       - name: Build Android App
+        working-directory: WhisperKitAndroid
         run: ./gradlew assembleDebug
         
