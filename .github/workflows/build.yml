@@ -141,3 +141,9 @@ jobs:
         with:
           path: ./build/android
           key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
+
+      - name: Inspect restored cache folders
+        working-directory: WhisperKitAndroid
+        run: |
+          ls WhisperKitAndroid/external/libs/android
+          ls WhisperKitAndroid/build/android
