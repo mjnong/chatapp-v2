@@ -79,6 +79,10 @@ jobs:
   build-whisperkit:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
       # Clone the external repository
       - name: Clone WhisperKitAndroid Repository
         run: git clone https://github.com/argmaxinc/WhisperKitAndroid.git
