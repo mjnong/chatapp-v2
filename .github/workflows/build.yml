@@ -165,7 +165,7 @@ jobs:
 
       - name: Build Android App
         run: |
-          pwd
+          cd ..
           ls .
           ./gradlew assembleDebug
         
