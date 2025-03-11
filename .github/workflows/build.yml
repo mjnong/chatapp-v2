@@ -157,6 +157,7 @@ jobs:
       - name: Copy shared libraries to target directory
         working-directory: WhisperKitAndroid
         run: |
+          chmod -R 777 /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
