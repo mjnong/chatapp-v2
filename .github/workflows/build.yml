@@ -42,13 +42,13 @@ jobs:
           for zip in *.zip; do
             case "$zip" in
               aarch64-android.zip)
-                unzip -j "$zip" 'aarch64-android/*' -d aarch64-android/
+                unzip -j "$zip" 'aarch64-android/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
                 ;;
               hexagon-v75.zip)
-                unzip -j "$zip" 'hexagon-v75/*' -d hexagon-v75/
+                unzip -j "$zip" 'hexagon-v75/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
                 ;;
               hexagon-v79.zip)
-                unzip -j "$zip" 'hexagon-v79/*' -d hexagon-v79/
+                unzip -j "$zip" 'hexagon-v79/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
                 ;;
             esac
           done
@@ -168,9 +168,37 @@ jobs:
           cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp build/android/libnative-whisper.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
-      - name: Build Android App
+      - name: Upload whisperkit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cache-whisperkit
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+
+  download-hexagon:
+    runs-on: ubuntu-latest
+    needs: prepare
+    strategy:
+      matrix:
+        hexagon: [ hexagon-v75, hexagon-v79 ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download ${{ matrix.hexagon }} artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.hexagon }}
+
+      - name: Download whisperkit artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: cache-whisperkit
+
+      - name: List contents of ${{ matrix.hexagon }} folder
         run: |
-          pwd
-          ls .
-          ./gradlew assembleDebug
-        
+          ls -la ${{ matrix.hexagon }}
+          ls /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
+          ls /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
+          ls /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+
+      
