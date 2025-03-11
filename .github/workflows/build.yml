@@ -145,5 +145,5 @@ jobs:
       - name: Inspect restored cache folders
         working-directory: WhisperKitAndroid
         run: |
-          ls WhisperKitAndroid/external/libs/android
-          ls WhisperKitAndroid/build/android
+          ls ./external/libs/android
+          ls ./build/android
