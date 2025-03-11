@@ -103,13 +103,13 @@ jobs:
           path: /opt/qcom/aitstack/qairt/2.31.0/lib/external
           key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
-      # Restore cached whisperkit-libs based on changes in the build environment config
-      - name: Restore cached whisperkit-libs
-        id: cache-whisperkit-libs
+      # Restore the cache using a composite key that covers both the JNI source and the build environment config.
+      - name: Restore cached whisperkit artifacts
+        id: cache-whisperkit
         uses: actions/cache@v3
         with:
           path: /opt/qcom/aitstack/qairt/2.31.0/lib/external
-          key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
+          key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Update NativeWhisperKit.cpp Function Names
         working-directory: WhisperKitAndroid
@@ -174,6 +174,14 @@ jobs:
           cp external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp build/android/libnative-whisper.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+
+      # Save the built libraries back to the cache if they were rebuilt.
+      - name: Save whisperkit artifacts to cache
+        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/external
+          key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Upload whisperkit artifacts
         uses: actions/upload-artifact@v4
