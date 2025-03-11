@@ -164,6 +164,7 @@ jobs:
           cp build/android/libnative-whisper.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
       - name: Build Android App
-        working-directory: chatapp-v2
-        run: ./gradlew assembleDebug
+        run: |
+          pwd
+          ./gradlew assembleDebug
         
