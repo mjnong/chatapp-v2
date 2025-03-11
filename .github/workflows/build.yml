@@ -134,6 +134,19 @@ jobs:
           make ci-env
           docker exec axie_tflite make build jni
 
+      - name: Upload jni-libs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jni-libs
+          path: ./external/libs/android
+
+      - name: Upload whisperkit-libs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: whisperkit-libs
+          path: ./build/android/
+
+
       # - name: Copy Shared Libraries to Target Directory
       #   run: |
       #     # Create the target directory (adjust permissions if necessary)
