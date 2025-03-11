@@ -62,19 +62,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aarch64-android
-          path: aarch64-android/
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
 
       - name: Upload hexagon-v75 artifact
         uses: actions/upload-artifact@v4
         with:
           name: hexagon-v75
-          path: hexagon-v75/
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
 
       - name: Upload hexagon-v79 artifact
         uses: actions/upload-artifact@v4
         with:
           name: hexagon-v79
-          path: hexagon-v79/
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
 
   build-whisperkit:
     runs-on: ubuntu-latest
