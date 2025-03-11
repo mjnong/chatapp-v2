@@ -162,3 +162,7 @@ jobs:
           cp external/libs/android/libtensorflowlite_gpu_delegate.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp build/android/libwhisperkit.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp build/android/libnative-whisper.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
+
+      - name: Build Android App
+        run: ./gradlew assembleDebug
+        
