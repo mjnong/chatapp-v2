@@ -174,9 +174,9 @@ jobs:
           name: cache-whisperkit
           path: /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
-  download-hexagon:
+  build-app:
     runs-on: ubuntu-latest
-    needs: prepare
+    needs: [ prepare, build-whisperkit ]
     strategy:
       matrix:
         hexagon: [ hexagon-v75, hexagon-v79 ]
