@@ -124,13 +124,14 @@ jobs:
           make ci-env
           docker exec axie_tflite make build jni
           docker exec axie_tflite ls .
+          docker exec axie_tflite pwd
 
       # Save updated jni-libs to cache if they were rebuilt
       - name: Save jni-libs to cache
         if: steps.cache-jni-libs.outputs.cache-hit != 'true'
         uses: actions/cache@v3
         with:
-          path: WhisperKitAndroid/external/libs/android
+          path: ./external/libs/android
           key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
       # Save updated whisperkit-libs to cache if they were rebuilt
@@ -138,5 +139,5 @@ jobs:
         if: steps.cache-whisperkit-libs.outputs.cache-hit != 'true'
         uses: actions/cache@v3
         with:
-          path: WhisperKitAndroid/build/android
+          path: ./build/android
           key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
