@@ -11,13 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Clone the external repository
-      - name: create path
+      # Create target directories (this step can run regardless of the cache)
+      - name: Create paths
         run: |
           sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
           sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
           sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
-
 
       # Cache the extracted artifact directories
       - name: Cache architecture artifacts
@@ -28,8 +27,6 @@ jobs:
             /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
             /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
             /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
-          # Use a cache key that makes sense for your use case.
-          # For example, you might use the branch name or a hash of the release tag.
           key: ${{ runner.os }}-architecture-artifacts-${{ github.ref }}
 
       # Only download the release assets if the cache was not found
@@ -43,29 +40,29 @@ jobs:
       - name: Extract and create component artifacts
         if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: |
-          # Create temporary directories
+          # Create temporary directories if needed
           mkdir -p {aarch64-android,hexagon-v75,hexagon-v79}
-  
-          # Extract files from the downloaded zips
+
+          # Extract files from the downloaded zips with automatic overwrite
           for zip in *.zip; do
             case "$zip" in
               aarch64-android.zip)
-                unzip -j "$zip" 'aarch64-android/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+                unzip -o -j "$zip" 'aarch64-android/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
                 ;;
               hexagon-v75.zip)
-                unzip -j "$zip" 'hexagon-v75/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
+                unzip -o -j "$zip" 'hexagon-v75/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
                 ;;
               hexagon-v79.zip)
-                unzip -j "$zip" 'hexagon-v79/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
+                unzip -o -j "$zip" 'hexagon-v79/*' -d /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
                 ;;
             esac
           done
-  
-          # Display component sizes
+
+          # Optionally, display component sizes
           echo "Component sizes:"
           du -sh {aarch64-android,hexagon-v75,hexagon-v79}
 
-      # Regardless of cache, upload the artifacts so that downstream jobs can use them
+      # Upload the artifacts for downstream jobs regardless of cache status
       - name: Upload aarch64-android artifact
         uses: actions/upload-artifact@v4
         with:
@@ -83,6 +80,7 @@ jobs:
         with:
           name: hexagon-v79
           path: /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
+
 
   build-whisperkit:
     runs-on: ubuntu-latest
