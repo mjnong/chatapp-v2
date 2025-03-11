@@ -17,9 +17,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            aarch64-android
-            hexagon-v75
-            hexagon-v79
+            /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+            /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v75/unsigned/
+            /opt/qcom/aitstack/qairt/2.31.0/lib/hexagon-v79/unsigned/
           # Use a cache key that makes sense for your use case.
           # For example, you might use the branch name or a hash of the release tag.
           key: ${{ runner.os }}-architecture-artifacts-${{ github.ref }}
