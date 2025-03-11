@@ -82,17 +82,19 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       # Clone the external repository
       - name: Clone WhisperKitAndroid Repository
-        run: git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+        run: |
+          git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
 
       # Restore cached jni-libs based on changes in the JNI source file
       - name: Restore cached jni-libs
         id: cache-jni-libs
         uses: actions/cache@v3
         with:
-          path: WhisperKitAndroid/external/libs/android
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/external
           key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
       # Restore cached whisperkit-libs based on changes in the build environment config
@@ -100,7 +102,7 @@ jobs:
         id: cache-whisperkit-libs
         uses: actions/cache@v3
         with:
-          path: WhisperKitAndroid/build/android
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/external
           key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Update NativeWhisperKit.cpp Function Names
@@ -155,7 +157,6 @@ jobs:
       - name: Copy shared libraries to target directory
         working-directory: WhisperKitAndroid
         run: |
-          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
           cp external/libs/android/libavcodec.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp external/libs/android/libavformat.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
           cp external/libs/android/libavutil.so /opt/qcom/aitstack/qairt/2.31.0/lib/external/
