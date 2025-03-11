@@ -199,6 +199,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create paths
+        run: |
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+          sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
+
       - name: Download ${{ matrix.hexagon }} artifact
         uses: actions/download-artifact@v4
         with:
