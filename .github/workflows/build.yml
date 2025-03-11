@@ -182,7 +182,7 @@ jobs:
         hexagon: [ hexagon-v75, hexagon-v79 ]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download ${{ matrix.hexagon }} artifact
         uses: actions/download-artifact@v3
