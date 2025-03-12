@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Create target directories under the repo (no sudo required)
+      # Create target directories under the repository (no sudo needed)
       - name: Create paths
         run: |
           mkdir -p qnnsdk/lib/aarch64-android/
@@ -29,21 +29,18 @@ jobs:
             qnnsdk/lib/hexagon-v79/unsigned/
           key: ${{ runner.os }}-architecture-artifacts-${{ github.ref }}
 
-      # Only download the release assets if the cache was not found
+      # Download release assets only if cache was not found
       - name: Download release assets
         if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: gh release download v0.0.1 -p '*.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Only extract the artifacts if the cache was not found
+      # Extract and create component artifacts only if cache was not found
       - name: Extract and create component artifacts
         if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: |
-          # Create temporary directories if needed
           mkdir -p {aarch64-android,hexagon-v75,hexagon-v79}
-
-          # Extract files from the downloaded zips with automatic overwrite
           for zip in *.zip; do
             case "$zip" in
               aarch64-android.zip)
@@ -57,12 +54,10 @@ jobs:
                 ;;
             esac
           done
-
-          # Optionally, display component sizes
           echo "Component sizes:"
           du -sh {aarch64-android,hexagon-v75,hexagon-v79}
 
-      # Upload the artifacts for downstream jobs regardless of cache status
+      # Upload artifacts for downstream jobs
       - name: Upload aarch64-android artifact
         uses: actions/upload-artifact@v4
         with:
@@ -81,20 +76,19 @@ jobs:
           name: hexagon-v79
           path: qnnsdk/lib/hexagon-v79/unsigned/
 
-
   build-whisperkit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Clone the external repository and ensure the target directory exists.
+      # Clone the external repository and create the target directory
       - name: Clone WhisperKitAndroid Repository
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
           mkdir -p qnnsdk/lib/external
 
-      # Restore cached jni-libs based on changes in the JNI source file
+      # Restore cached JNI libs and WhisperKit artifacts (final output is in qnnsdk/lib/external)
       - name: Restore cached jni-libs
         id: cache-jni-libs
         uses: actions/cache@v3
@@ -102,7 +96,6 @@ jobs:
           path: qnnsdk/lib/external
           key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
-      # Restore the cache using a composite key that covers both the JNI source and the build environment config.
       - name: Restore cached whisperkit artifacts
         id: cache-whisperkit
         uses: actions/cache@v3
@@ -125,7 +118,6 @@ jobs:
             -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2\.31\.0\.aar/g' \
             scripts/dev_env.sh scripts/Dockerfile
 
-      # Build the dev environment and JNI libraries if either cache is missing
       - name: Build Dev Environment & JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
         if: steps.cache-jni-libs.outputs.cache-hit != 'true' || steps.cache-whisperkit.outputs.cache-hit != 'true'
@@ -135,20 +127,20 @@ jobs:
           docker exec axie_tflite ls .
           docker exec axie_tflite pwd
 
-      # Save updated jni-libs to cache if they were rebuilt
+      # Save the updated JNI libraries to cache
       - name: Save jni-libs to cache
         if: steps.cache-jni-libs.outputs.cache-hit != 'true'
         uses: actions/cache@v3
         with:
-          path: ./external/libs/android
+          path: WhisperKitAndroid/external/libs/android
           key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
-      # Save updated whisperkit-libs to cache if they were rebuilt
+      # Save the updated WhisperKit libraries to cache
       - name: Save whisperkit-libs to cache
         if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         uses: actions/cache@v3
         with:
-          path: ./build/android
+          path: WhisperKitAndroid/build/android
           key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Inspect restored cache folders
@@ -157,6 +149,7 @@ jobs:
           ls ./external/libs/android
           ls ./build/android
 
+      # Copy the built libraries to the target directory in the repository
       - name: Copy shared libraries to target directory
         working-directory: WhisperKitAndroid
         run: |
@@ -172,7 +165,7 @@ jobs:
           cp build/android/libwhisperkit.so ../qnnsdk/lib/external/
           cp build/android/libnative-whisper.so ../qnnsdk/lib/external/
 
-      # Save the built libraries back to the cache if they were rebuilt.
+      # Save the final built artifacts to cache
       - name: Save whisperkit artifacts to cache
         if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         uses: actions/cache@v3
