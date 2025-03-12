@@ -208,11 +208,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.hexagon }}
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
 
       - name: Download whisperkit artifact
         uses: actions/download-artifact@v4
         with:
           name: cache-whisperkit
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
       - name: List contents of ${{ matrix.hexagon }} folder
         run: |
