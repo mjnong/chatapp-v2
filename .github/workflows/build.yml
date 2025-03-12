@@ -87,6 +87,7 @@ jobs:
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
           mkdir -p qnnsdk/lib/external
+          mkdir -p ./external/libs/android
 
       # Restore cached JNI libs and WhisperKit artifacts (final output is in qnnsdk/lib/external)
       - name: Restore cached jni-libs
@@ -143,12 +144,6 @@ jobs:
           path: WhisperKitAndroid/build/android
           key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
 
-      - name: Inspect restored cache folders
-        working-directory: WhisperKitAndroid
-        run: |
-          ls ./external/libs/android
-          ls ./build/android
-
       # Copy the built libraries to the target directory in the repository
       - name: Copy shared libraries to target directory
         working-directory: WhisperKitAndroid
@@ -164,6 +159,12 @@ jobs:
           cp external/libs/android/libtensorflowlite_gpu_delegate.so ../qnnsdk/lib/external/
           cp build/android/libwhisperkit.so ../qnnsdk/lib/external/
           cp build/android/libnative-whisper.so ../qnnsdk/lib/external/
+
+      - name: Inspect restored cache folders
+        working-directory: WhisperKitAndroid
+        run: |
+          ls ./external/libs/android
+          ls ./build/android
 
       # Save the final built artifacts to cache
       - name: Save whisperkit artifacts to cache
@@ -214,6 +215,11 @@ jobs:
 
       - name: List contents of artifact folders
         run: |
+          echo "Contents of qnnsdk/lib/${{ matrix.hexagon }}/unsigned/"
           ls qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
+          
+          echo "Contents of qnnsdk/lib/aarch64-android/"
           ls qnnsdk/lib/aarch64-android/
+          
+          echo "Contents of qnnsdk/lib/external"
           ls qnnsdk/lib/external
