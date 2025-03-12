@@ -226,5 +226,6 @@ jobs:
         run: |
           ls /opt/qcom/aitstack/qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
           ls /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+          ls /opt/qcom/aitstack/qairt/2.31.0/lib/external
 
       
