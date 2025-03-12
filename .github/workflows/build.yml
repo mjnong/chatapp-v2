@@ -94,6 +94,7 @@ jobs:
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
           sudo mkdir -p /opt/qcom/aitstack/qairt/2.31.0/lib/external
+          sudo chmod 777 /opt/qcom/aitstack/qairt/2.31.0/lib/external
 
       # Restore cached jni-libs based on changes in the JNI source file
       - name: Restore cached jni-libs
@@ -228,4 +229,3 @@ jobs:
           ls /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
           ls /opt/qcom/aitstack/qairt/2.31.0/lib/external
 
-      
