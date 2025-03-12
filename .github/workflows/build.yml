@@ -90,19 +90,19 @@ jobs:
           mkdir -p ./external/libs/android
 
       # Restore cached JNI libs and WhisperKit artifacts (final output is in qnnsdk/lib/external)
-      - name: Restore cached jni-libs
-        id: cache-jni-libs
-        uses: actions/cache@v3
-        with:
-          path: qnnsdk/lib/external
-          key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
+      # - name: Restore cached jni-libs
+      #   id: cache-jni-libs
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: qnnsdk/lib/external
+      #     key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
 
-      - name: Restore cached whisperkit artifacts
-        id: cache-whisperkit
-        uses: actions/cache@v3
-        with:
-          path: qnnsdk/lib/external
-          key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
+      # - name: Restore cached whisperkit artifacts
+      #   id: cache-whisperkit
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: qnnsdk/lib/external
+      #     key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Update NativeWhisperKit.cpp Function Names
         working-directory: WhisperKitAndroid
