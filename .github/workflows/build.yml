@@ -213,6 +213,12 @@ jobs:
       - name: Download whisperkit artifact
         uses: actions/download-artifact@v4
         with:
+          name: aarch64-android
+          path: /opt/qcom/aitstack/qairt/2.31.0/lib/aarch64-android/
+      
+      - name: Download whisperkit artifact
+        uses: actions/download-artifact@v4
+        with:
           name: cache-whisperkit
           path: /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
