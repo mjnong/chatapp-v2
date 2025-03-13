@@ -86,23 +86,14 @@ jobs:
       - name: Clone WhisperKitAndroid Repository
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
-          mkdir -p qnnsdk/lib/external
-          mkdir -p ./external/libs/android
 
-      # Restore cached JNI libs and WhisperKit artifacts (final output is in qnnsdk/lib/external)
-      # - name: Restore cached jni-libs
-      #   id: cache-jni-libs
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: qnnsdk/lib/external
-      #     key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
-
-      # - name: Restore cached whisperkit artifacts
-      #   id: cache-whisperkit
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: qnnsdk/lib/external
-      #     key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
+      # Restore cached artifacts from qnnsdk/lib/external
+      - name: Restore cached whisperkit artifacts
+        id: cache-whisperkit
+        uses: actions/cache@v3
+        with:
+          path: qnnsdk/lib/external
+          key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Update NativeWhisperKit.cpp Function Names
         working-directory: WhisperKitAndroid
@@ -115,40 +106,25 @@ jobs:
           sed -i \
             -e 's#/qnn-runtime/2\.27\.0/qnn-runtime-2\.27\.0\.aar#/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar#g' \
             -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar#g' \
-            -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31\.0\.aar/g' \
-            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2\.31\.0\.aar/g' \
+            -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31.0.aar/g' \
+            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31.0.aar/g' \
             scripts/dev_env.sh scripts/Dockerfile
 
       - name: Build Dev Environment & JNI Libraries (.so Files)
         working-directory: WhisperKitAndroid
-        if: steps.cache-jni-libs.outputs.cache-hit != 'true' || steps.cache-whisperkit.outputs.cache-hit != 'true'
+        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         run: |
           make ci-env
           docker exec axie_tflite make build jni
           docker exec axie_tflite ls .
           docker exec axie_tflite pwd
 
-      # Save the updated JNI libraries to cache
-      - name: Save jni-libs to cache
-        if: steps.cache-jni-libs.outputs.cache-hit != 'true'
-        uses: actions/cache@v3
-        with:
-          path: WhisperKitAndroid/external/libs/android
-          key: ${{ runner.os }}-jni-libs-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp') }}
-
-      # Save the updated WhisperKit libraries to cache
-      - name: Save whisperkit-libs to cache
-        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
-        uses: actions/cache@v3
-        with:
-          path: WhisperKitAndroid/build/android
-          key: ${{ runner.os }}-whisperkit-libs-${{ hashFiles('WhisperKitAndroid/scripts/dev_env.sh') }}
-
       # Copy the built libraries to the target directory in the repository
       - name: Copy shared libraries to target directory
+        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         working-directory: WhisperKitAndroid
         run: |
-          chmod -R 777 ../qnnsdk/lib/external/
+          mkdir -p ../qnnsdk/lib/external
           cp external/libs/android/libavcodec.so ../qnnsdk/lib/external/
           cp external/libs/android/libavformat.so ../qnnsdk/lib/external/
           cp external/libs/android/libavutil.so ../qnnsdk/lib/external/
@@ -160,13 +136,7 @@ jobs:
           cp build/android/libwhisperkit.so ../qnnsdk/lib/external/
           cp build/android/libnative-whisper.so ../qnnsdk/lib/external/
 
-      - name: Inspect restored cache folders
-        working-directory: WhisperKitAndroid
-        run: |
-          ls ./external/libs/android
-          ls ./build/android
-
-      # Save the final built artifacts to cache
+      # Save the final built artifacts (under qnnsdk/lib/external) to cache
       - name: Save whisperkit artifacts to cache
         if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         uses: actions/cache@v3
@@ -179,6 +149,7 @@ jobs:
         with:
           name: cache-whisperkit
           path: qnnsdk/lib/external/
+
 
   build-app:
     runs-on: ubuntu-latest
