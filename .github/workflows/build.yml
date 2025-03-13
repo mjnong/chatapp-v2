@@ -123,18 +123,17 @@ jobs:
       - name: Copy shared libraries to target directory
         working-directory: WhisperKitAndroid
         run: |
-          mkdir -p qnnsdk/lib/external
-          mkdir -p external/libs/android
-          cp external/libs/android/libavcodec.so qnnsdk/lib/external/
-          cp external/libs/android/libavformat.so qnnsdk/lib/external/
-          cp external/libs/android/libavutil.so qnnsdk/lib/external/
-          cp external/libs/android/libqnn_delegate_jni.so qnnsdk/lib/external/
-          cp external/libs/android/libSDL3.so qnnsdk/lib/external/
-          cp external/libs/android/libswresample.so qnnsdk/lib/external/
-          cp external/libs/android/libtensorflowlite.so qnnsdk/lib/external/
-          cp external/libs/android/libtensorflowlite_gpu_delegate.so qnnsdk/lib/external/
-          cp build/android/libwhisperkit.so qnnsdk/lib/external/
-          cp build/android/libnative-whisper.so qnnsdk/lib/external/
+          mkdir -p ../qnnsdk/lib/external
+          cp external/libs/android/libavcodec.so ../qnnsdk/lib/external/
+          cp external/libs/android/libavformat.so ../qnnsdk/lib/external/
+          cp external/libs/android/libavutil.so ../qnnsdk/lib/external/
+          cp external/libs/android/libqnn_delegate_jni.so ../qnnsdk/lib/external/
+          cp external/libs/android/libSDL3.so ../qnnsdk/lib/external/
+          cp external/libs/android/libswresample.so ../qnnsdk/lib/external/
+          cp external/libs/android/libtensorflowlite.so ../qnnsdk/lib/external/
+          cp external/libs/android/libtensorflowlite_gpu_delegate.so ../qnnsdk/lib/external/
+          cp build/android/libwhisperkit.so ../qnnsdk/lib/external/
+          cp build/android/libnative-whisper.so ../qnnsdk/lib/external/
 
       # Save the final built artifacts (under qnnsdk/lib/external) to cache
       - name: Save whisperkit artifacts to cache
