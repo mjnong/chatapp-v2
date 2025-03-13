@@ -75,7 +75,6 @@ jobs:
         with:
           name: hexagon-v79
           path: qnnsdk/lib/hexagon-v79/unsigned/
-          
 
   build-whisperkit:
     runs-on: ubuntu-latest
