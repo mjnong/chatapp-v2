@@ -86,8 +86,6 @@ jobs:
       - name: Clone WhisperKitAndroid Repository
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
-          mkdir -p qnnsdk/lib/external
-          mkdir -p ./external/libs/android
 
       # Restore cached artifacts from qnnsdk/lib/external
       - name: Restore cached whisperkit artifacts
@@ -125,7 +123,8 @@ jobs:
       - name: Copy shared libraries to target directory
         working-directory: WhisperKitAndroid
         run: |
-          chmod -R 777 qnnsdk/lib/external/
+          mkdir -p qnnsdk/lib/external
+          mkdir -p external/libs/android
           cp external/libs/android/libavcodec.so qnnsdk/lib/external/
           cp external/libs/android/libavformat.so qnnsdk/lib/external/
           cp external/libs/android/libavutil.so qnnsdk/lib/external/
