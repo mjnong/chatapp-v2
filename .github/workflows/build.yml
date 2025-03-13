@@ -103,7 +103,7 @@ jobs:
       # Optionally upload the models as an artifact. This is useful if you want
       # to inspect or download the models directly from the Actions run logs.
       - name: Upload WhisperKit Models Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: whisperkit-models
           path: WhisperKitAndroid/models
