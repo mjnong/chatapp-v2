@@ -193,7 +193,7 @@ jobs:
 
   build-app:
     runs-on: ubuntu-latest
-    needs: [ prepare, build-whisperkit ]
+    needs: [ prepare, build-whisperkit, download-whisperkit-models ]
     strategy:
       matrix:
         hexagon: [ hexagon-v75, hexagon-v79 ]
