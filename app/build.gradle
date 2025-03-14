@@ -101,8 +101,8 @@ android {
 
         // Ensure genie-config and tokenizer is present
         models.each { model ->
-            if (!file(relAssetsPath + model + "/genie-config.json").exists()) {
-                throw new RuntimeException("Missing genie-config.json for " + model + ".")
+            if (!file(relAssetsPath + model + "/genie_config.json").exists()) {
+                throw new RuntimeException("Missing genie_config.json for " + model + ".")
             }
             if (!file(relAssetsPath + model + "/tokenizer.json").exists()) {
                 throw new RuntimeException("Missing tokenizer.json for " + model + ".")
