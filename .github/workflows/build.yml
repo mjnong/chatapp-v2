@@ -76,6 +76,46 @@ jobs:
           name: hexagon-v79
           path: qnnsdk/lib/hexagon-v79/unsigned/
 
+  download-whisperkit-models:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v3
+
+      # Restore the models cache if it exists
+      - name: Restore WhisperKit Models Cache
+        id: whisperkit-cache
+        uses: actions/cache@v3
+        with:
+          # You can adjust the path based on exactly where your models live
+          path: WhisperKitAndroid/models
+          key: ${{ runner.os }}-whisperkit-models-${{ hashFiles('WhisperKitAndroid/Makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-whisperkit-models-
+
+      - name: Clone WhisperKitAndroid Repository
+        if: steps.whisperkit-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+          cd WhisperKitAndroid
+          make download-models
+
+      # Optionally upload the models as an artifact. This is useful if you want
+      # to inspect or download the models directly from the Actions run logs.
+      - name: Upload WhisperKit Models Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whisperkit-models
+          path: WhisperKitAndroid/models
+
+      # If the cache was not previously hit, update the cache now that models are downloaded
+      - name: Update WhisperKit Models Cache
+        if: steps.whisperkit-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: WhisperKitAndroid/models
+          key: ${{ runner.os }}-whisperkit-models-${{ hashFiles('WhisperKitAndroid/Makefile') }}
+
   build-whisperkit:
     runs-on: ubuntu-latest
     steps:
@@ -153,7 +193,7 @@ jobs:
 
   build-app:
     runs-on: ubuntu-latest
-    needs: [ prepare, build-whisperkit ]
+    needs: [ prepare, build-whisperkit, download-whisperkit-models ]
     strategy:
       matrix:
         hexagon: [ hexagon-v75, hexagon-v79 ]
@@ -194,3 +234,7 @@ jobs:
           
           echo "Contents of qnnsdk/lib/external"
           ls qnnsdk/lib/external
+
+          # Download htp_backend_ext_config and genie_config from GitHub
+          curl -L -o htp_backend_ext_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/htp/htp_backend_ext_config.json.template
+          curl -L -o genie_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/genie/llama_v3_2_3b_chat_quantized.json
