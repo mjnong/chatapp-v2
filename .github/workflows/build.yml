@@ -249,10 +249,13 @@ jobs:
           echo "Contents of qnnsdk/lib/external"
           ls qnnsdk/lib/external
 
-          gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models
-          gh release download v0.0.1 -p 'tokenizer.json' --dir app/src/main/assets/models
-          gh release download v0.0.1 -p 'genie_config.json' --dir app/src/main/assets/models
-          gh release download v0.0.1 -p 'htp_backend_ext_config.json' --dir app/src/main/assets/models
+          # .bin models, tokenizer, genie config
+          gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models/llama3_2_3b
+          gh release download v0.0.1 -p 'tokenizer.json' --dir app/src/main/assets/models/llama3_2_3b
+          gh release download v0.0.1 -p 'genie_config.json' --dir app/src/main/assets/models/llama3_2_3b
+
+          # hexagon config
+          gh release download v0.0.1 -p 'htp_backend_ext_config.json' --dir app/src/main/assets/htp_config
 
           echo ""
           echo "Contents of app/src/main/assets/models"
