@@ -232,6 +232,8 @@ jobs:
           path: app/src/main/assets/
 
       - name: List contents of artifact folders
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pwd
           ls
