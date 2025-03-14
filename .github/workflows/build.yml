@@ -203,6 +203,7 @@ jobs:
 
       - name: Create paths
         run: |
+          mkdir -p qnnsdk/lib/external/
           mkdir -p qnnsdk/lib/aarch64-android/
           mkdir -p qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
 
@@ -222,7 +223,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: cache-whisperkit
-          path: app/src/main/assets/
+          path: qnnsdk/lib/external/
 
       - name: Download whisperkit models
         uses: actions/download-artifact@v4
