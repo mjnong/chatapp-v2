@@ -226,6 +226,8 @@ jobs:
 
       - name: List contents of artifact folders
         run: |
+          pwd
+          ls
           echo "Contents of qnnsdk/lib/${{ matrix.hexagon }}/unsigned/"
           ls qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
           
