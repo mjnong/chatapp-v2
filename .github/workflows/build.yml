@@ -253,7 +253,12 @@ jobs:
           curl -L -o genie_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/genie/llama_v3_2_3b_chat_quantized.json
 
           gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models
+          gh release download v0.0.1 -p 'tokenizer.json' --dir app/src/main/assets/models
+          gh release download v0.0.1 -p 'genie_config.json' --dir app/src/main/assets/models
 
           echo ""
           echo "Contents of app/src/main/assets/models"
           ls app/src/main/assets/models
+
+      - name: Build app
+        run: ./gradlew assembleRelease
