@@ -212,7 +212,7 @@ jobs:
           name: ${{ matrix.hexagon }}
           path: qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
 
-      - name: Download whisperkit artifact (aarch64-android)
+      - name: Download android artifact (aarch64-android)
         uses: actions/download-artifact@v4
         with:
           name: aarch64-android
@@ -222,21 +222,37 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: cache-whisperkit
-          path: qnnsdk/lib/external/
+          path: app/src/main/assets/
+
+      - name: Download whisperkit models
+        uses: actions/download-artifact@v4
+        with:
+          name: whisperkit-models
+          path: app/src/main/assets/
 
       - name: List contents of artifact folders
         run: |
           pwd
           ls
+          echo ""
           echo "Contents of qnnsdk/lib/${{ matrix.hexagon }}/unsigned/"
           ls qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
           
+          echo ""
           echo "Contents of qnnsdk/lib/aarch64-android/"
           ls qnnsdk/lib/aarch64-android/
           
+          echo ""
           echo "Contents of qnnsdk/lib/external"
           ls qnnsdk/lib/external
+          
 
           # Download htp_backend_ext_config and genie_config from GitHub
-          curl -L -o htp_backend_ext_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/htp/htp_backend_ext_config.json.template
+          curl -L -o src/main/assets/htp_config/htp_backend_ext_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/htp/htp_backend_ext_config.json.template
           curl -L -o genie_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/genie/llama_v3_2_3b_chat_quantized.json
+
+          gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models
+
+          echo ""
+          echo "Contents of app/src/main/assets/models"
+          ls app/src/main/assets/models
