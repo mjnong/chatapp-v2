@@ -246,15 +246,11 @@ jobs:
           echo ""
           echo "Contents of qnnsdk/lib/external"
           ls qnnsdk/lib/external
-          
-
-          # Download htp_backend_ext_config and genie_config from GitHub
-          curl -L -o src/main/assets/htp_config/htp_backend_ext_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/htp/htp_backend_ext_config.json.template
-          curl -L -o genie_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/genie/llama_v3_2_3b_chat_quantized.json
 
           gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models
           gh release download v0.0.1 -p 'tokenizer.json' --dir app/src/main/assets/models
           gh release download v0.0.1 -p 'genie_config.json' --dir app/src/main/assets/models
+          gh release download v0.0.1 -p 'htp_backend_ext_config.json' --dir app/src/main/assets/models
 
           echo ""
           echo "Contents of app/src/main/assets/models"
