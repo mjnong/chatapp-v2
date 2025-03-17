@@ -163,16 +163,16 @@ jobs:
           pwd
           ls
           echo ""
-          echo "Contents of qairt/lib/${{ matrix.hexagon }}/unsigned/"
-          ls qairt/lib/${{ matrix.hexagon }}/unsigned/
+          echo "Contents of qairt/2.31.0.250130/lib/${{ matrix.hexagon }}/unsigned/"
+          ls qairt/2.31.0.250130/lib/${{ matrix.hexagon }}/unsigned/
           
           echo ""
-          echo "Contents of qairt/lib/aarch64-android/"
-          ls qairt/lib/aarch64-android/
+          echo "Contents of qairt/2.31.0.250130/lib/aarch64-android/"
+          ls qairt/2.31.0.250130/lib/aarch64-android/
           
           echo ""
-          echo "Contents of qairt/lib/external"
-          ls qairt/lib/external
+          echo "Contents of qairt/2.31.0.250130/lib/external"
+          ls qairt/2.31.0.250130/lib/external
 
           # .bin models, tokenizer, genie config
           gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models/llama3_2_3b
