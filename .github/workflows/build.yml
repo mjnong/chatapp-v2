@@ -193,4 +193,4 @@ jobs:
           ls app/src/main/assets/models
 
       - name: Build app
-        run: ./gradlew
+        run: ./gradlew assembleRelease
