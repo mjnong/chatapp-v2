@@ -5,76 +5,6 @@ on:
   pull_request:
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Create target directories under the repository (no sudo needed)
-      - name: Create paths
-        run: |
-          mkdir -p qairt/lib/aarch64-android/
-          mkdir -p qairt/lib/hexagon-v75/unsigned/
-          mkdir -p qairt/lib/hexagon-v79/unsigned/
-
-      # Cache the extracted artifact directories
-      - name: Cache architecture artifacts
-        id: cache-artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            qairt/lib/aarch64-android/
-            qairt/lib/hexagon-v75/unsigned/
-            qairt/lib/hexagon-v79/unsigned/
-          key: ${{ runner.os }}-architecture-artifacts-${{ github.ref }}
-
-      # Download release asset only if cache was not found
-      - name: Download release asset
-        if: steps.cache-artifacts.outputs.cache-hit != 'true'
-        run: gh release download v0.0.1 -p 'qairt.zip'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Extract and create component artifacts only if cache was not found
-      - name: Extract and create component artifacts
-        if: steps.cache-artifacts.outputs.cache-hit != 'true'
-        run: |
-          # Extract to each of the needed directories
-          unzip -o -j "qairt.zip" \
-            "qairt/2.31.0.250130/lib/aarch64-android/*" \
-            -d qairt/lib/aarch64-android/
-          
-          unzip -o -j "qairt.zip" \
-            "qairt/2.31.0.250130/lib/hexagon-v75/unsigned/*" \
-            -d qairt/lib/hexagon-v75/unsigned/
-          
-          unzip -o -j "qairt.zip" \
-            "qairt/2.31.0.250130/lib/hexagon-v79/unsigned/*" \
-            -d qairt/lib/hexagon-v79/unsigned/
-
-          echo "Component sizes:"
-          du -sh qairt/lib/aarch64-android/ qairt/lib/hexagon-v75/unsigned/ qairt/lib/hexagon-v79/unsigned/
-
-      # Upload artifacts for downstream jobs
-      - name: Upload aarch64-android artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: aarch64-android
-          path: qairt/lib/aarch64-android/
-
-      - name: Upload hexagon-v75 artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hexagon-v75
-          path: qairt/lib/hexagon-v75/unsigned/
-
-      - name: Upload hexagon-v79 artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: hexagon-v79
-          path: qairt/lib/hexagon-v79/unsigned/
-
   download-whisperkit-models:
     runs-on: ubuntu-latest
     steps:
@@ -192,7 +122,7 @@ jobs:
 
   build-app:
     runs-on: ubuntu-latest
-    needs: [ prepare, build-whisperkit, download-whisperkit-models ]
+    needs: [ build-whisperkit, download-whisperkit-models ]
     strategy:
       matrix:
         hexagon: [ hexagon-v75, hexagon-v79 ]
@@ -202,9 +132,7 @@ jobs:
 
       - name: Create paths
         run: |
-          mkdir -p qairt/lib/external/
-          mkdir -p qairt/lib/aarch64-android/
-          mkdir -p qairt/lib/${{ matrix.hexagon }}/unsigned/
+          mkdir -p qairt/
 
       # Download release asset only if cache was not found
       - name: Download release asset
@@ -212,20 +140,9 @@ jobs:
         run: |
           gh release download v0.0.1 -p 'qairt.zip'
           unzip -o "qairt.zip" -d qairt
+          ls .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download ${{ matrix.hexagon }} artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.hexagon }}
-          path: qairt/lib/${{ matrix.hexagon }}/unsigned/
-
-      - name: Download android artifact (aarch64-android)
-        uses: actions/download-artifact@v4
-        with:
-          name: aarch64-android
-          path: qairt/lib/aarch64-android/
       
       - name: Download whisperkit artifact (external)
         uses: actions/download-artifact@v4
