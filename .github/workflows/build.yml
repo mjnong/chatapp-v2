@@ -241,7 +241,7 @@ jobs:
 
       # Download release asset only if cache was not found
       - name: Download release asset
-        run: gh release download v0.0.1 -p 'qairt_folder.zip'
+        run: gh release download v0.0.1 -p 'qairt.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
