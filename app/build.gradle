@@ -8,7 +8,7 @@ plugins {
 // Path to local QNN SDK.
 // Download QNN SDK from https://qpm.qualcomm.com/#/main/tools/details/qualcomm_ai_engine_direct
 // UPDATE PATH TO YOU LOCAL QNN SDK
-def qnnSDKLocalPath="../qairt"
+def qnnSDKLocalPath="../qairt/2.31.0"
 
 // List of model assets
 def modelsConfigFile = file('src/main/assets/config/models.json')
