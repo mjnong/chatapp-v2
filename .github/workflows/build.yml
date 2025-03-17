@@ -160,14 +160,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p app/src/main/cpp/include
-          mv qairt/2.31.0/include/Genie app/src/main/cpp/include
+          cp qairt/2.31.0/include/Genie app/src/main/cpp/include
 
           pwd
           ls
           echo ""
           echo "Contents of qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/"
           ls qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
-          
+
+          echo ""
+          echo "Contents of app/src/main/cpp/include"
+          ls app/src/main/cpp/include
+
           echo ""
           echo "Contents of qairt/2.31.0/lib/aarch64-android/"
           ls qairt/2.31.0/lib/aarch64-android/
