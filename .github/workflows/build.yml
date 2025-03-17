@@ -56,7 +56,7 @@ jobs:
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
 
-      # Restore cached artifacts from qairt/2.31.0/lib/external
+      # Restore cached artifacts from qairt/lib/external
       - name: Restore cached whisperkit artifacts
         id: cache-whisperkit
         uses: actions/cache@v3
@@ -159,6 +159,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p app/src/main/cpp/include
+          mv qairt/2.31.0/include/Genie app/src/main/cpp/include
+
           pwd
           ls
           echo ""
