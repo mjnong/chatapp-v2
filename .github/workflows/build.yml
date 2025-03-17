@@ -56,12 +56,12 @@ jobs:
         run: |
           git clone https://github.com/argmaxinc/WhisperKitAndroid.git
 
-      # Restore cached artifacts from qairt/lib/external
+      # Restore cached artifacts from qairt/2.31.0/lib/external
       - name: Restore cached whisperkit artifacts
         id: cache-whisperkit
         uses: actions/cache@v3
         with:
-          path: qairt/lib/external
+          path: qairt/2.31.0/lib/external
           key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Update NativeWhisperKit.cpp Function Names
@@ -93,31 +93,31 @@ jobs:
         if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         working-directory: WhisperKitAndroid
         run: |
-          mkdir -p ../qairt/lib/external
-          cp external/libs/android/libavcodec.so ../qairt/lib/external/
-          cp external/libs/android/libavformat.so ../qairt/lib/external/
-          cp external/libs/android/libavutil.so ../qairt/lib/external/
-          cp external/libs/android/libqnn_delegate_jni.so ../qairt/lib/external/
-          cp external/libs/android/libSDL3.so ../qairt/lib/external/
-          cp external/libs/android/libswresample.so ../qairt/lib/external/
-          cp external/libs/android/libtensorflowlite.so ../qairt/lib/external/
-          cp external/libs/android/libtensorflowlite_gpu_delegate.so ../qairt/lib/external/
-          cp build/android/libwhisperkit.so ../qairt/lib/external/
-          cp build/android/libnative-whisper.so ../qairt/lib/external/
+          mkdir -p ../qairt/2.31.0/lib/external
+          cp external/libs/android/libavcodec.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libavformat.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libavutil.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libqnn_delegate_jni.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libSDL3.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libswresample.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libtensorflowlite.so ../qairt/2.31.0/lib/external/
+          cp external/libs/android/libtensorflowlite_gpu_delegate.so ../qairt/2.31.0/lib/external/
+          cp build/android/libwhisperkit.so ../qairt/2.31.0/lib/external/
+          cp build/android/libnative-whisper.so ../qairt/2.31.0/lib/external/
 
       # Save the final built artifacts (under qairt/lib/external) to cache
       - name: Save whisperkit artifacts to cache
         if: steps.cache-whisperkit.outputs.cache-hit != 'true'
         uses: actions/cache@v3
         with:
-          path: qairt/lib/external
+          path: qairt/2.31.0/lib/external
           key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
 
       - name: Upload whisperkit artifacts
         uses: actions/upload-artifact@v4
         with:
           name: cache-whisperkit
-          path: qairt/lib/external/
+          path: qairt/2.31.0/lib/external/
 
 
   build-app:
@@ -162,16 +162,16 @@ jobs:
           pwd
           ls
           echo ""
-          echo "Contents of qairt/2.31.0.250130/lib/${{ matrix.hexagon }}/unsigned/"
-          ls qairt/2.31.0.250130/lib/${{ matrix.hexagon }}/unsigned/
+          echo "Contents of qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/"
+          ls qairt/2.31.0/lib/${{ matrix.hexagon }}/unsigned/
           
           echo ""
-          echo "Contents of qairt/2.31.0.250130/lib/aarch64-android/"
-          ls qairt/2.31.0.250130/lib/aarch64-android/
+          echo "Contents of qairt/2.31.0/lib/aarch64-android/"
+          ls qairt/2.31.0/lib/aarch64-android/
           
           echo ""
-          echo "Contents of qairt/2.31.0.250130/lib/external"
-          ls qairt/2.31.0.250130/lib/external
+          echo "Contents of qairt/2.31.0/lib/external"
+          ls qairt/2.31.0/lib/external
 
           # .bin models, tokenizer, genie config
           gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models/llama3_2_3b
