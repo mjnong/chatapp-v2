@@ -32,7 +32,7 @@ jobs:
       # Download release asset only if cache was not found
       - name: Download release asset
         if: steps.cache-artifacts.outputs.cache-hit != 'true'
-        run: gh release download v0.0.1 -p 'qairt_folder.zip'
+        run: gh release download v0.0.1 -p 'qairt.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -41,15 +41,15 @@ jobs:
         if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: |
           # Extract to each of the needed directories
-          unzip -o -j "qairt_folder.zip" \
+          unzip -o -j "qairt.zip" \
             "qairt/2.31.0.250130/lib/aarch64-android/*" \
             -d qairt/lib/aarch64-android/
           
-          unzip -o -j "qairt_folder.zip" \
+          unzip -o -j "qairt.zip" \
             "qairt/2.31.0.250130/lib/hexagon-v75/unsigned/*" \
             -d qairt/lib/hexagon-v75/unsigned/
           
-          unzip -o -j "qairt_folder.zip" \
+          unzip -o -j "qairt.zip" \
             "qairt/2.31.0.250130/lib/hexagon-v79/unsigned/*" \
             -d qairt/lib/hexagon-v79/unsigned/
 
@@ -210,8 +210,8 @@ jobs:
       - name: Download release asset
         if: steps.cache-artifacts.outputs.cache-hit != 'true'
         run: |
-          gh release download v0.0.1 -p 'qairt_folder.zip'
-          unzip -o -j "qairt_folder.zip" "qairt" -d qairt
+          gh release download v0.0.1 -p 'qairt.zip'
+          unzip -o -j "qairt.zip" "qairt" -d qairt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
