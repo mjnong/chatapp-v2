@@ -1,0 +1,240 @@
+name: Architecture-Specific Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Create target directories under the repository (no sudo needed)
+      - name: Create paths
+        run: |
+          mkdir -p qnnsdk/lib/aarch64-android/
+          mkdir -p qnnsdk/lib/hexagon-v75/unsigned/
+          mkdir -p qnnsdk/lib/hexagon-v79/unsigned/
+
+      # Cache the extracted artifact directories
+      - name: Cache architecture artifacts
+        id: cache-artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            qnnsdk/lib/aarch64-android/
+            qnnsdk/lib/hexagon-v75/unsigned/
+            qnnsdk/lib/hexagon-v79/unsigned/
+          key: ${{ runner.os }}-architecture-artifacts-${{ github.ref }}
+
+      # Download release assets only if cache was not found
+      - name: Download release assets
+        if: steps.cache-artifacts.outputs.cache-hit != 'true'
+        run: gh release download v0.0.1 -p '*.zip'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract and create component artifacts only if cache was not found
+      - name: Extract and create component artifacts
+        if: steps.cache-artifacts.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p {aarch64-android,hexagon-v75,hexagon-v79}
+          for zip in *.zip; do
+            case "$zip" in
+              aarch64-android.zip)
+                unzip -o -j "$zip" 'aarch64-android/*' -d qnnsdk/lib/aarch64-android/
+                ;;
+              hexagon-v75.zip)
+                unzip -o -j "$zip" 'hexagon-v75/*' -d qnnsdk/lib/hexagon-v75/unsigned/
+                ;;
+              hexagon-v79.zip)
+                unzip -o -j "$zip" 'hexagon-v79/*' -d qnnsdk/lib/hexagon-v79/unsigned/
+                ;;
+            esac
+          done
+          echo "Component sizes:"
+          du -sh {aarch64-android,hexagon-v75,hexagon-v79}
+
+      # Upload artifacts for downstream jobs
+      - name: Upload aarch64-android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aarch64-android
+          path: qnnsdk/lib/aarch64-android/
+
+      - name: Upload hexagon-v75 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexagon-v75
+          path: qnnsdk/lib/hexagon-v75/unsigned/
+
+      - name: Upload hexagon-v79 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexagon-v79
+          path: qnnsdk/lib/hexagon-v79/unsigned/
+
+  download-whisperkit-models:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v3
+
+      # Restore the models cache if it exists
+      - name: Restore WhisperKit Models Cache
+        id: whisperkit-cache
+        uses: actions/cache@v3
+        with:
+          # You can adjust the path based on exactly where your models live
+          path: WhisperKitAndroid/models
+          key: ${{ runner.os }}-whisperkit-models-${{ hashFiles('WhisperKitAndroid/Makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-whisperkit-models-
+
+      - name: Clone WhisperKitAndroid Repository
+        if: steps.whisperkit-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+          cd WhisperKitAndroid
+          make download-models
+
+      # Optionally upload the models as an artifact. This is useful if you want
+      # to inspect or download the models directly from the Actions run logs.
+      - name: Upload WhisperKit Models Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whisperkit-models
+          path: WhisperKitAndroid/models
+
+      # If the cache was not previously hit, update the cache now that models are downloaded
+      - name: Update WhisperKit Models Cache
+        if: steps.whisperkit-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: WhisperKitAndroid/models
+          key: ${{ runner.os }}-whisperkit-models-${{ hashFiles('WhisperKitAndroid/Makefile') }}
+
+  build-whisperkit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Clone the external repository and create the target directory
+      - name: Clone WhisperKitAndroid Repository
+        run: |
+          git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+
+      # Restore cached artifacts from qnnsdk/lib/external
+      - name: Restore cached whisperkit artifacts
+        id: cache-whisperkit
+        uses: actions/cache@v3
+        with:
+          path: qnnsdk/lib/external
+          key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
+
+      - name: Update NativeWhisperKit.cpp Function Names
+        working-directory: WhisperKitAndroid
+        run: |
+          sed -i 's/Java_com_argmaxinc_WhisperKitNative/Java_com_edgeai_chatappv2_WhisperKitNative/g' jni/NativeWhisperKit.cpp
+
+      - name: Update QNN SDK Version in dev_env.sh and Dockerfile
+        working-directory: WhisperKitAndroid
+        run: |
+          sed -i \
+            -e 's#/qnn-runtime/2\.27\.0/qnn-runtime-2\.27\.0\.aar#/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar#g' \
+            -e 's#/qnn-tflite-delegate/2\.27\.0/qnn-tflite-delegate-2\.27\.0\.aar#/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar#g' \
+            -e 's/qnn-runtime-2\.27\.0\.aar/qnn-runtime-2.31.0.aar/g' \
+            -e 's/qnn-tflite-delegate-2\.27\.0\.aar/qnn-litert-delegate-2.31.0.aar/g' \
+            scripts/dev_env.sh scripts/Dockerfile
+
+      - name: Build Dev Environment & JNI Libraries (.so Files)
+        working-directory: WhisperKitAndroid
+        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
+        run: |
+          make ci-env
+          docker exec axie_tflite make build jni
+          docker exec axie_tflite ls .
+          docker exec axie_tflite pwd
+
+      # Copy the built libraries to the target directory in the repository
+      - name: Copy shared libraries to target directory
+        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
+        working-directory: WhisperKitAndroid
+        run: |
+          mkdir -p ../qnnsdk/lib/external
+          cp external/libs/android/libavcodec.so ../qnnsdk/lib/external/
+          cp external/libs/android/libavformat.so ../qnnsdk/lib/external/
+          cp external/libs/android/libavutil.so ../qnnsdk/lib/external/
+          cp external/libs/android/libqnn_delegate_jni.so ../qnnsdk/lib/external/
+          cp external/libs/android/libSDL3.so ../qnnsdk/lib/external/
+          cp external/libs/android/libswresample.so ../qnnsdk/lib/external/
+          cp external/libs/android/libtensorflowlite.so ../qnnsdk/lib/external/
+          cp external/libs/android/libtensorflowlite_gpu_delegate.so ../qnnsdk/lib/external/
+          cp build/android/libwhisperkit.so ../qnnsdk/lib/external/
+          cp build/android/libnative-whisper.so ../qnnsdk/lib/external/
+
+      # Save the final built artifacts (under qnnsdk/lib/external) to cache
+      - name: Save whisperkit artifacts to cache
+        if: steps.cache-whisperkit.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: qnnsdk/lib/external
+          key: ${{ runner.os }}-whisperkit-${{ hashFiles('WhisperKitAndroid/jni/NativeWhisperKit.cpp', 'WhisperKitAndroid/scripts/dev_env.sh') }}
+
+      - name: Upload whisperkit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cache-whisperkit
+          path: qnnsdk/lib/external/
+
+
+  build-app:
+    runs-on: ubuntu-latest
+    needs: [ prepare, build-whisperkit, download-whisperkit-models ]
+    strategy:
+      matrix:
+        hexagon: [ hexagon-v75, hexagon-v79 ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create paths
+        run: |
+          mkdir -p qnnsdk/lib/aarch64-android/
+          mkdir -p qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
+
+      - name: Download ${{ matrix.hexagon }} artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.hexagon }}
+          path: qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
+
+      - name: Download whisperkit artifact (aarch64-android)
+        uses: actions/download-artifact@v4
+        with:
+          name: aarch64-android
+          path: qnnsdk/lib/aarch64-android/
+      
+      - name: Download whisperkit artifact (external)
+        uses: actions/download-artifact@v4
+        with:
+          name: cache-whisperkit
+          path: qnnsdk/lib/external/
+
+      - name: List contents of artifact folders
+        run: |
+          echo "Contents of qnnsdk/lib/${{ matrix.hexagon }}/unsigned/"
+          ls qnnsdk/lib/${{ matrix.hexagon }}/unsigned/
+          
+          echo "Contents of qnnsdk/lib/aarch64-android/"
+          ls qnnsdk/lib/aarch64-android/
+          
+          echo "Contents of qnnsdk/lib/external"
+          ls qnnsdk/lib/external
+
+          # Download htp_backend_ext_config and genie_config from GitHub
+          curl -L -o htp_backend_ext_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/htp/htp_backend_ext_config.json.template
+          curl -L -o genie_config.json https://raw.githubusercontent.com/quic/ai-hub-apps/main/tutorials/llm_on_genie/configs/genie/llama_v3_2_3b_chat_quantized.json
