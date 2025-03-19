@@ -120,7 +120,7 @@ jobs:
           path: qairt/2.31.0/lib/external/
   
   sherpa-build:
-    runs-on: ubuntu-latest
+    runs-on: androidndk/android-ndk:latest
     env:
       QNN_SDK_PATH: /opt/qcom/aitstack/qairt/2.31.0
       ANDROID_NDK: /Users/fangjun/software/my-android/ndk/28.x.x
