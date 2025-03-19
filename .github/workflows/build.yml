@@ -203,6 +203,13 @@ jobs:
           ls qairt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up swap file
+        run: |
+          sudo fallocate -l 4G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
       
       - name: Download whisperkit artifact (external)
         uses: actions/download-artifact@v4
