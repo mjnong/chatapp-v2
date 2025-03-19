@@ -223,11 +223,9 @@ For more information, refer to the [Sherpa-ONNX documentation](https://github.co
 ### App Showcase
 
 <div align="center">
-  <!-- Replace the image URL with a frame from your video -->
-  <a href="https://github.com/mjnong/chatapp-v2/assets/chatappv2.mp4">
-    <img src="docs/images/chatapp_thumbnail.png" alt="ChatApp V2 Demo" width="320"/>
+  <a href="https://mjnong.github.io/chatapp-v2/assets/chatappv2.mp4">
+    <img src="https://img.shields.io/badge/Watch%20Demo-ChatApp%20V2%20with%20Llama%203.2-blue?style=for-the-badge&logo=github" alt="Watch ChatApp V2 Demo"/>
   </a>
-  <p><i>Click to watch a demo of ChatApp V2 with Llama 3.2 and Whisper</i></p>
 </div>
 
 Experience ChatApp V2 in action, featuring:
@@ -238,11 +236,9 @@ Experience ChatApp V2 in action, featuring:
 ### Real-time TTS Feature
 
 <div align="center">
-  <!-- Replace the image URL with a frame from your second video -->
-  <a href="https://github.com/mjnong/chatapp-v2/assets/realtimetts.mp4">
-    <img src="docs/images/tts_thumbnail.png" alt="Real-time TTS Demo" width="320"/>
+  <a href="https://mjnong.github.io/chatapp-v2/assets/realtimetts.mp4">
+    <img src="https://img.shields.io/badge/Watch%20Demo-Real--time%20TTS%20Feature-orange?style=for-the-badge&logo=github" alt="Watch Real-time TTS Demo"/>
   </a>
-  <p><i>Click to watch real-time Text-to-Speech capability</i></p>
 </div>
 
 The real-time TTS feature provides:
