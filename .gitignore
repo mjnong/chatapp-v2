@@ -9,6 +9,9 @@ local.properties
 # Build
 build
 
+# TTS
+app/src/main/java/com/edgeai/chatappv2/Tts.kt
+
 # Models
 app/src/main/assets/models/**
 !app/src/main/assets/models/.gitkeep
