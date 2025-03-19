@@ -143,10 +143,6 @@ jobs:
         run: |
           ./scripts/qairt/download_onnx_qnn.sh
 
-      - name: Create symlink for TTS API file
-        run: |
-          ln -s $(pwd)/sherpa-onnx-qnn/sherpa-onnx/kotlin-api/Tts.kt $ANDROID_PROJECT_PATH/app/src/main/java/com/edgeai/chatappv2/Tts.kt
-
       - name: Build for Android (arm64-v8a)
         working-directory: sherpa-onnx-qnn
         run: |
