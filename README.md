@@ -218,6 +218,36 @@ For more information, refer to the [Sherpa-ONNX documentation](https://github.co
     - `libwhisperkit.so`
     - `libnative-whisperkit.so`
 
+## 📱 Demo Videos
+
+### App Showcase
+
+<div align="center">
+  <!-- Replace the image URL with a frame from your video -->
+  <a href="https://github.com/mjnong/chatapp-v2/assets/chatappv2.mp4">
+    <img src="docs/images/chatapp_thumbnail.png" alt="ChatApp V2 Demo" width="320"/>
+  </a>
+  <p><i>Click to watch a demo of ChatApp V2 with Llama 3.2 and Whisper</i></p>
+</div>
+
+Experience ChatApp V2 in action, featuring:
+- Conversational interactions with Llama 3.2 3B
+- Customizable voice settings (speed and speaker selection)
+- On-device processing using the Snapdragon® NPU
+
+### Real-time TTS Feature
+
+<div align="center">
+  <!-- Replace the image URL with a frame from your second video -->
+  <a href="https://github.com/mjnong/chatapp-v2/assets/realtimetts.mp4">
+    <img src="docs/images/tts_thumbnail.png" alt="Real-time TTS Demo" width="320"/>
+  </a>
+  <p><i>Click to watch real-time Text-to-Speech capability</i></p>
+</div>
+
+The real-time TTS feature provides:
+- Instant voice feedback as the model generates text
+- Natural-sounding speech with sentence-level processing
 
 ## 📄 License
 

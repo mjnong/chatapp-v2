@@ -13,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Rect;
 import android.widget.ToggleButton;
-import android.widget.LinearLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -52,7 +51,7 @@ public class Conversation extends AppCompatActivity {
     private boolean enableRealtimeTts = false;
     private ToggleButton toggleRealtimeTts;
 
-    private ActivityResultLauncher<String[]> requestPermissionLauncher =
+    private final ActivityResultLauncher<String[]> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                     isGranted -> {
                         for (Map.Entry<String, Boolean> entry : isGranted.entrySet()) {
@@ -97,6 +96,11 @@ public class Conversation extends AppCompatActivity {
         // Get the singleton instance of MainViewModel
         mainViewModel = MainViewModel.getInstance();
         
+        // Initialize TTS settings from preferences
+        PreferenceHelper preferenceHelper = new PreferenceHelper(this);
+        TtsEngine.speed = preferenceHelper.getSpeed();
+        TtsEngine.speakerId = preferenceHelper.getSpeakerId();
+        
         // Initialize UI components
         RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
         MessageRecyclerViewAdapter adapter = new MessageRecyclerViewAdapter(this, messages);
@@ -112,6 +116,14 @@ public class Conversation extends AppCompatActivity {
         loadWhisperButton = findViewById(R.id.load_whisper_button);
         userInput = findViewById(R.id.user_input);
         sendButton = findViewById(R.id.send_button);
+        
+        // Find the TTS settings button and set up listener
+        ImageButton ttsSettingsButton = findViewById(R.id.tts_settings_button);
+        ttsSettingsButton.setOnClickListener(v -> {
+            // Show TTS settings dialog
+            TtsSettingsDialog settingsDialog = new TtsSettingsDialog(this);
+            settingsDialog.show();
+        });
         
         // Find the toggle button and set up listener
         try {
@@ -411,7 +423,7 @@ public class Conversation extends AppCompatActivity {
                                         
                                         // Start real-time TTS playback
                                         String textToSpeak = speechBuffer.toString();
-                                        adapter.startLiveRealtimeTts(textToSpeak);
+                                        adapter.startStreamingTTSPlayback(textToSpeak);
                                         
                                         // Clear buffer since we're now in continuous playback mode
                                         speechBuffer.setLength(0);
@@ -419,7 +431,7 @@ public class Conversation extends AppCompatActivity {
                                     // If we're already speaking and have a new chunk, send it for continuous processing
                                     else if (isSpeakingStarted[0] && !response.isEmpty()) {
                                         // Append new text to TTS
-                                        adapter.appendToRealtimeTts(response);
+                                        adapter.appendStreamingTTS(response);
                                     }
                                 }
                             });
@@ -483,7 +495,7 @@ public class Conversation extends AppCompatActivity {
                                         
                                         // Start real-time TTS playback
                                         String textToSpeak = speechBuffer.toString();
-                                        adapter.startLiveRealtimeTts(textToSpeak);
+                                        adapter.startStreamingTTSPlayback(textToSpeak);
                                         
                                         // Clear buffer since we're now in continuous playback mode
                                         speechBuffer.setLength(0);
@@ -491,7 +503,7 @@ public class Conversation extends AppCompatActivity {
                                     // If we're already speaking and have a new chunk, send it for continuous processing
                                     else if (isSpeakingStarted[0] && !response.isEmpty()) {
                                         // Append new text to TTS
-                                        adapter.appendToRealtimeTts(response);
+                                        adapter.appendStreamingTTS(response);
                                     }
                                 }
                             });

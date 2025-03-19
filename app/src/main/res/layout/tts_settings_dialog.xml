@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TTS Settings"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorAccent"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Speed controls -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Speech Speed"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/speed_value_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1.0×"
+        android:textAlignment="center"
+        android:layout_marginTop="4dp" />
+
+    <SeekBar
+        android:id="@+id/speed_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        android:max="280"
+        android:progress="100" />
+
+    <!-- Speaker ID selection (only visible when multiple speakers available) -->
+    <LinearLayout
+        android:id="@+id/speaker_selection_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Speaker Voice"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp" />
+            
+        <Spinner
+            android:id="@+id/speaker_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
+    </LinearLayout>
+    
+    <!-- Test TTS section -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test Voice"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+        
+    <EditText
+        android:id="@+id/test_text_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter text to test"
+        android:text="Hello, this is a test of the text to speech system."
+        android:minLines="2"
+        android:maxLines="4"
+        android:layout_marginTop="4dp"
+        android:inputType="textMultiLine" />
+        
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+        
+        <Button
+            android:id="@+id/test_play_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Play Test"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/text_rounded_corner" />
+            
+        <Button
+            android:id="@+id/test_stop_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Stop"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/text_rounded_corner" />
+    </LinearLayout>
+
+    <!-- Action buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/save_settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:background="@drawable/text_rounded_corner"
+            android:textColor="@color/black" />
+    </LinearLayout>
+</LinearLayout> 

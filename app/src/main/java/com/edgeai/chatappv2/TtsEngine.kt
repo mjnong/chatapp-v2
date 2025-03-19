@@ -10,8 +10,6 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import java.io.File
 import java.io.FileOutputStream
@@ -50,9 +48,6 @@ object TtsEngine {
     // cmn for Mandarin
     var lang: String? = null
 
-    private val speedState: MutableState<Float> = mutableFloatStateOf(1.0F)
-    private val speakerIdState: MutableState<Int> = mutableIntStateOf(0)
-
     private val trackStateStopped: MutableState<Boolean> = mutableStateOf(false)
     private val samplesChannel: MutableState<Channel<FloatArray>> = mutableStateOf(Channel<FloatArray>())
 
@@ -68,17 +63,11 @@ object TtsEngine {
             trackStateStopped.value = value
         }
 
-    var speed: Float
-        get() = speedState.value
-        set(value) {
-            speedState.value = value
-        }
+    @JvmField
+    var speed: Float = 1.0F
 
-    var speakerId: Int
-        get() = speakerIdState.value
-        set(value) {
-            speakerIdState.value = value
-        }
+    @JvmField
+    var speakerId: Int = 0
 
     private var modelDir: String? = null
     private var modelName: String? = null
@@ -308,8 +297,9 @@ object TtsEngine {
             ruleFars = ruleFars ?: ""
         )
 
+        // Load saved settings
         speed = PreferenceHelper(context).getSpeed()
-        speakerId = PreferenceHelper(context).getSid()
+        speakerId = PreferenceHelper(context).getSpeakerId()
 
         tts = OfflineTts(assetManager = assets, config = config)
         Log.i(TAG, "Start to initialize AudioTrack")

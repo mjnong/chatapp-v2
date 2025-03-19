@@ -12,7 +12,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.edgeai.chatappv2.MainActivity.Companion.TAG
-import com.edgeai.chatappv2.TtsPlaybackMode
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -185,7 +184,7 @@ class MessageRecyclerViewAdapter(
                 }
                 2 -> { // Real-time playback
                     Toast.makeText(context, "Using real-time playback for lower latency", Toast.LENGTH_SHORT).show()
-                    playTtsRealtime(message)
+                    generateAndStreamTTS(message)
                     true
                 }
                 else -> false
@@ -276,7 +275,7 @@ class MessageRecyclerViewAdapter(
     /**
      * Play TTS with real-time AudioTrack playback
      */
-    private fun playTtsRealtime(message: ChatMessage) {
+    private fun generateAndStreamTTS(message: ChatMessage) {
         // Cancel any existing TTS job
         currentTtsJob?.cancel()
         
@@ -409,12 +408,6 @@ class MessageRecyclerViewAdapter(
         addMessage(msg)
     }
 
-    // this function is called from C++, but we're not using it anymore
-    private fun callback(samples: FloatArray): Int {
-        // Simply return 1 to continue or 0 to stop, but not actually processing samples
-        return if (TtsEngine.trackState) 0 else 1
-    }
-
     /**
      * updateBotMessage: updates / inserts message on behalf of Bot
      * @param bot_message message to update or insert
@@ -470,7 +463,7 @@ class MessageRecyclerViewAdapter(
      * Start real-time TTS for a message being generated
      * @param initialText The initial text to speak
      */
-    fun startLiveRealtimeTts(initialText: String) {
+    fun startStreamingTTSPlayback(initialText: String) {
         // Cancel any existing TTS or streaming job
         stopTts()
         streamingSpeechJob?.cancel()
@@ -490,7 +483,7 @@ class MessageRecyclerViewAdapter(
      * Append new text to an ongoing streaming TTS session
      * @param newText New text to append to the speech
      */
-    fun appendToRealtimeTts(newText: String) {
+    fun appendStreamingTTS(newText: String) {
         if (!isStreamingTts) return
         
         // Only log if there's meaningful text to add
@@ -573,48 +566,28 @@ class MessageRecyclerViewAdapter(
      * Start continuous streaming TTS that processes text as it's generated
      */
     private fun startContinuousStreamingTts() {
-        // Create a job to continuously process the streaming buffer
         streamingSpeechJob = scope.launch {
             try {
-                // Get initial text
-                var textToProcess = streamingTtsBuffer.toString()
-                var lastProcessedLength = 0
-                
-                // Keep processing while streaming is active
                 while (isStreamingTts) {
-                    // Check if we have new text to process
                     val currentText = streamingTtsBuffer.toString()
-                    
-                    if (currentText.length > lastProcessedLength) {
-                        // Get only the new portion of text
-                        textToProcess = currentText.substring(lastProcessedLength)
-                        
-                        // Log what we're processing
-                        Log.d(TAG, "Processing new text segment: '${textToProcess.take(50)}${if (textToProcess.length > 50) "..." else ""}'")
-                        
-                        // Create sentences from the text to make TTS flow better
-                        val sentences = createSentences(textToProcess)
-                        
+                    // Extract complete sentence matches from the buffer
+                    val matches = createCompleteSentenceMatches(currentText)
+                    if (matches.isNotEmpty()) {
                         // Process each complete sentence
-                        for (sentence in sentences) {
-                            if (!isStreamingTts) break
-                            
-                            if (sentence.isNotBlank()) {
+                        for (match in matches) {
+                            val sentence = match.value.trim()
+                            if (sentence.isNotEmpty()) {
                                 Log.d(TAG, "Speaking sentence: '$sentence'")
-                                
-                                // Process this sentence
                                 processSentenceTts(sentence)
                             }
                         }
-                        
-                        // Update processed length
-                        lastProcessedLength = currentText.length
+                        // Remove processed text up to the end of the last complete sentence
+                        val lastMatch = matches.last()
+                        streamingTtsBuffer.delete(0, lastMatch.range.last + 1)
                     }
-                    
                     // Small delay to prevent CPU thrashing
                     kotlinx.coroutines.delay(50)
                 }
-                
                 Log.d(TAG, "Continuous streaming TTS loop ended")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in continuous streaming TTS: ${e.message}")
@@ -625,7 +598,7 @@ class MessageRecyclerViewAdapter(
     /**
      * Process a single sentence for TTS
      */
-    private suspend fun processSentenceTts(sentence: String) {
+    private fun processSentenceTts(sentence: String) {
         if (!isStreamingTts) return
         
         try {
@@ -655,54 +628,33 @@ class MessageRecyclerViewAdapter(
                 callback = callbackFn
             )
             
-            // Short pause between sentences for more natural speech
-            kotlinx.coroutines.delay(150)
-            
         } catch (e: Exception) {
             Log.e(TAG, "Error processing sentence for TTS: ${e.message}")
         }
     }
     
-    /**
-     * Create complete sentences from text for better TTS processing
-     */
     private fun createSentences(text: String): List<String> {
-        // Split text at sentence boundaries for better TTS
-        val sentenceDelimiters = listOf(". ", "! ", "? ", ".\n", "!\n", "?\n")
-        val sentences = mutableListOf<String>()
-        
-        var remainingText = text
-        
-        // Try to find complete sentences
-        while (remainingText.isNotEmpty()) {
-            // Find the earliest sentence delimiter
-            var delimiterIndex = -1
-            var earliestDelimiter = ""
-            
-            for (delimiter in sentenceDelimiters) {
-                val index = remainingText.indexOf(delimiter)
-                if (index != -1 && (delimiterIndex == -1 || index < delimiterIndex)) {
-                    delimiterIndex = index
-                    earliestDelimiter = delimiter
-                }
-            }
-            
-            if (delimiterIndex != -1) {
-                // We found a sentence delimiter
-                val sentenceEnd = delimiterIndex + earliestDelimiter.length
-                val sentence = remainingText.substring(0, sentenceEnd)
-                sentences.add(sentence)
-                remainingText = remainingText.substring(sentenceEnd)
-            } else {
-                // No more sentence delimiters
-                if (remainingText.length > 3) {  // Only process if we have enough text
-                    sentences.add(remainingText)
-                }
-                break
-            }
+        // Define a minimum chunk size to avoid processing very short segments
+        val MIN_CHUNK_SIZE = 20
+        if (text.length < MIN_CHUNK_SIZE) {
+            return emptyList()
         }
         
+        // Use a regex to split text at punctuation (., !, ?) followed by whitespace
+        // This improves performance and clarity compared to manual delimiter searching
+        val sentences = Regex("(?<=[.!?])\\s+").split(text).filter { it.trim().isNotEmpty() }
+        
         return sentences
+    }
+
+    /**
+     * Finds all complete sentences in the given text.
+     * A complete sentence is defined as any substring that ends with a punctuation mark (. ! ?),
+     * followed by whitespace or end-of-string.
+     */
+    private fun createCompleteSentenceMatches(text: String): List<MatchResult> {
+        val regex = Regex(".*?[.!?](\\s+|$)")
+        return regex.findAll(text).toList()
     }
 
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
