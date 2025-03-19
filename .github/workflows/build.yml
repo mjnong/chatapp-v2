@@ -246,6 +246,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+
+          rm -r qairt/2.31.0/lib/hexagon-v73-securepd
+          rm -r qairt/2.31.0/lib/hexagon-v75-securepd
+          rm -r qairt/2.31.0/lib/hexagon-v79-securepd
+          rm -r qairt/2.31.0/lib/arm64x-windows-msvc
+          rm -r qairt/2.31.0/lib/aarch64-ubuntu-gcc9.4
+          rm -r qairt/2.31.0/lib/aarch64-oe-linux-gcc9.3
+          rm -r qairt/2.31.0/lib/aarch64-oe-linux-gcc11.2
+
           mkdir -p app/src/main/cpp/include
           cp -r qairt/2.31.0/include/Genie/* app/src/main/cpp/include
 
