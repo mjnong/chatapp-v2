@@ -7,61 +7,105 @@
     android:background="@null"
     android:padding="8dp">
 
-        <LinearLayout
-            app:layout_constraintEnd_toEndOf="parent"
+    <!-- Bot message container with left align -->
+    <LinearLayout
+        android:id="@+id/left_chat_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bot_response"
+        android:padding="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="64dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/bot_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bot_response"
-            android:padding="8dp"
-            android:layout_marginEnd="20dp"
-            android:id="@+id/left_chat_layout"
+            android:paddingLeft="10dp"
+            android:paddingTop="6dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="6dp"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/token_timing_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:textSize="11sp"
+            android:textColor="#757575"
+            android:visibility="gone"
+            android:text="Generated in 0.0s" />
+    </LinearLayout>
+
+    <!-- Bot TTS FAB - positioned at the right side of bot message -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/bot_tts_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_play_arrow"
+        app:fabSize="mini"
+        android:visibility="visible"
+        app:backgroundTint="@color/colorPrimary"
+        app:tint="@android:color/white"
+        android:contentDescription="Speak bot message"
+        tools:ignore="HardcodedText" />
+
+    <!-- User message container with right align -->
+    <LinearLayout
+        android:id="@+id/right_chat_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/user_input"
+        android:layout_alignParentEnd="true"
+        android:padding="8dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        tools:ignore="RelativeOverlap">
+
+        <TextView
+            android:id="@+id/user_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingTop="6dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="6dp"
+            android:textSize="20sp" />
+            
+        <TextView
+            android:id="@+id/transcription_timing_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:layout_gravity="end"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:textSize="11sp"
+            android:textColor="#757575"
+            android:visibility="gone"
+            android:text="Transcribed in 0.0s"
+            tools:ignore="HardcodedText" />
+    </LinearLayout>
 
-          <TextView
-                android:id="@+id/bot_message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:paddingLeft="10dp"
-                android:paddingTop="6dp"
-                android:paddingRight="10dp"
-                android:paddingBottom="6dp"
-                android:textSize="20sp" />
-
-          <TextView
-                android:id="@+id/token_timing_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
-                android:textSize="11sp"
-                android:textColor="#757575"
-                android:visibility="gone"
-                android:text="Generated in 0.0s" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/user_input"
-            android:layout_alignParentEnd="true"
-            android:padding="8dp"
-            android:layout_marginStart="60dp"
-            android:id="@+id/right_chat_layout"
-            tools:ignore="RelativeOverlap">
-
-            <TextView
-                android:id="@+id/user_message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="2dp"
-                android:background="@color/user_color"
-                android:paddingTop="2dp"
-                android:paddingRight="2dp"
-                android:paddingBottom="2dp"
-                android:textSize="20sp" />
-        </LinearLayout>
+    <!-- User TTS FAB - positioned at the left side of user message -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/user_tts_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_play_arrow"
+        app:fabSize="mini"
+        android:visibility="visible"
+        app:backgroundTint="@color/colorPrimary"
+        app:tint="@android:color/white"
+        android:contentDescription="Speak user message"
+        tools:ignore="HardcodedText,RelativeOverlap" />
 
 </RelativeLayout>

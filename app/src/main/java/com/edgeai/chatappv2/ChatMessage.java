@@ -9,13 +9,17 @@ public class ChatMessage {
     private int mLength;
     public MessageSender mSender;
     private double msToFirstToken;
-    private double msToLastToken;
+    private double totalGenerationTimeMs; // Changed from msToLastToken to be more explicit
+    private long startTimeMs; // Store the original start time
     private boolean isFirstTokenTimeSet = false;
+    private double transcriptionTimeMs = 0; // Time it took to transcribe voice input
+    private boolean isFromVoiceInput = false; // Flag to indicate if message is from voice input
 
     public ChatMessage(String msg, MessageSender sender) {
         mMessage = msg;
         mSender = sender;
         mLength = msg.length();
+        startTimeMs = System.currentTimeMillis(); // Initialize start time
     }
 
     /**
@@ -29,7 +33,24 @@ public class ChatMessage {
         mLength = msg.length();
         mSender = sender;
         msToFirstToken = timeUntilFirstToken;
+        totalGenerationTimeMs = timeUntilFirstToken; // Initialize total time to at least first token time
         isFirstTokenTimeSet = timeUntilFirstToken > 0;
+        startTimeMs = System.currentTimeMillis() - (long)timeUntilFirstToken; // Calculate approximate start time
+    }
+
+    /**
+     * ChatMessage: Constructor for a message from voice input
+     * @param msg: the message
+     * @param sender: the sender of the message
+     * @param transcriptionTime: the time it took to transcribe the voice input in milliseconds
+     */
+    public ChatMessage(String msg, MessageSender sender, double transcriptionTime, boolean isVoiceInput) {
+        mMessage = msg;
+        mLength = msg.length();
+        mSender = sender;
+        transcriptionTimeMs = transcriptionTime;
+        isFromVoiceInput = isVoiceInput;
+        startTimeMs = System.currentTimeMillis(); // Initialize start time
     }
 
     /**
@@ -82,7 +103,8 @@ public class ChatMessage {
      */
     public void setMsToFirstToken() {
         if (!isFirstTokenTimeSet) {
-            msToFirstToken = System.currentTimeMillis();
+            msToFirstToken = System.currentTimeMillis() - startTimeMs;
+            totalGenerationTimeMs = msToFirstToken; // Initialize total time to at least first token time
             isFirstTokenTimeSet = true;
         }
     }
@@ -92,8 +114,8 @@ public class ChatMessage {
      *
      * @return time in milliseconds
      */ 
-    public double getMsToLastToken() {
-        return msToLastToken;
+    public double getTotalGenerationTimeMs() {
+        return totalGenerationTimeMs;
     }
 
     /**
@@ -101,19 +123,21 @@ public class ChatMessage {
      * @param origin: the time the message was sent
      */
     public void setMsToLastToken(long origin) {
-        msToLastToken = System.currentTimeMillis() - origin;
+        double newTotalTime = System.currentTimeMillis() - origin;
+        // Ensure total time is never less than first token time
+        totalGenerationTimeMs = Math.max(newTotalTime, msToFirstToken);
     }
 
     /**
-     * timeBetweenTokens: Get the time it took to generate the last token
+     * timeBetweenTokens: Get the time it took to generate all tokens (total generation time)
      *
      * @return time in milliseconds
      */
     public double timeBetweenTokens() {
-        if (!isFirstTokenTimeSet || msToLastToken == 0) {
+        if (!isFirstTokenTimeSet || totalGenerationTimeMs == 0) {
             return 0;
         }
-        return msToLastToken - msToFirstToken;
+        return totalGenerationTimeMs; // Return the total generation time directly
     }
 
     /**
@@ -132,4 +156,25 @@ public class ChatMessage {
         return timeBetweenTokens() / 1000.0;
     }
 
+    /**
+     * Returns transcription time in seconds
+     */
+    public double getTranscriptionTimeSeconds() {
+        return transcriptionTimeMs / 1000.0;
+    }
+
+    /**
+     * Returns true if the message is from voice input
+     */
+    public boolean isFromVoiceInput() {
+        return isFromVoiceInput;
+    }
+
+    /**
+     * Set transcription time in milliseconds
+     */
+    public void setTranscriptionTimeMs(double transcriptionTime) {
+        transcriptionTimeMs = transcriptionTime;
+        isFromVoiceInput = true;
+    }
 }

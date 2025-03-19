@@ -33,6 +33,19 @@
             android:background="@drawable/text_rounded_corner"
             android:padding="8dp"
             android:textSize="12sp" />
+
+        <ToggleButton
+            android:id="@+id/toggle_realtime_tts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textOn="Live TTS"
+            android:textOff="Live TTS"
+            android:checked="false"
+            android:textSize="12sp"
+            android:padding="8dp"
+            android:textColor="@color/black"
+            android:background="@drawable/text_rounded_corner" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

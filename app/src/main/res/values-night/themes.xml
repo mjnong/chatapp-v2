@@ -2,15 +2,22 @@
     <!-- Base application theme. -->
     <style name="Theme.ChatAppV2" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">@color/sage</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorSecondary">@color/sand</item>
+        <item name="colorSecondaryVariant">@color/terracotta</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <!-- Background colors - darker variants for night mode -->
+        <item name="android:colorBackground">#2D2F45</item>
+        <item name="colorSurface">#3D405B</item>
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/cream</item>
+        <item name="android:textColorSecondary">@color/gray</item>
+        <!-- Accent color -->
+        <item name="colorAccent">@color/sand</item>
     </style>
 </resources>
