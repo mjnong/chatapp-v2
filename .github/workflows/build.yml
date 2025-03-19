@@ -118,11 +118,63 @@ jobs:
         with:
           name: cache-whisperkit
           path: qairt/2.31.0/lib/external/
+  
+  sherpa-build:
+    runs-on: ubuntu-latest
+    env:
+      QNN_SDK_PATH: /opt/qcom/aitstack/qairt/2.31.0
+      ANDROID_NDK: /Users/fangjun/software/my-android/ndk/28.x.x
+      ANDROID_PROJECT_PATH: /path/to/your/android-project  # Update this path as needed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git sudo
+
+      - name: Clone sherpa-onnx-qnn repository
+        run: |
+          git clone https://github.com/mjnong/sherpa-onnx-qnn.git
+
+      - name: Download ONNX QNN support files
+        working-directory: sherpa-onnx-qnn
+        run: |
+          ./scripts/qairt/download_onnx_qnn.sh
+
+      - name: Create symlink for TTS API file
+        run: |
+          ln -s $(pwd)/sherpa-onnx-qnn/sherpa-onnx/kotlin-api/Tts.kt $ANDROID_PROJECT_PATH/app/src/main/java/com/edgeai/chatappv2/Tts.kt
+
+      - name: Build for Android (arm64-v8a)
+        working-directory: sherpa-onnx-qnn
+        run: |
+          chmod +x build-android-arm64-v8a.sh
+          ./build-android-arm64-v8a.sh
+
+      - name: Prepare cache folder for built libraries
+        run: |
+          mkdir -p cached_libs
+          cp sherpa-onnx-qnn/build-android-arm64-v8a/install/lib/libonnxruntime.so cached_libs/
+          cp sherpa-onnx-qnn/build-android-arm64-v8a/install/lib/libsherpa-onnx-jni.so cached_libs/
+
+      - name: Cache built libraries
+        uses: actions/cache@v3
+        with:
+          path: cached_libs
+          key: ${{ runner.os }}-build-cache-${{ github.ref }}
+
+      - name: Upload built libraries artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-libraries
+          path: cached_libs/
 
 
   build-app:
     runs-on: ubuntu-latest
-    needs: [ build-whisperkit, download-whisperkit-models ]
+    needs: [ build-whisperkit, sherpa-build, download-whisperkit-models ]
     strategy:
       matrix:
         hexagon: [ hexagon-v75, hexagon-v79 ]
@@ -133,6 +185,10 @@ jobs:
       - name: Create paths
         run: |
           mkdir -p qairt/
+
+      - name: Clone sherpa-onnx-qnn repository
+        run: |
+          git clone https://github.com/mjnong/sherpa-onnx-qnn.git
 
       # Download release asset only if cache was not found
       - name: Download release asset
@@ -154,6 +210,12 @@ jobs:
         with:
           name: whisperkit-models
           path: app/src/main/assets/
+
+      - name: Download built libraries artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: built-libraries
+          path: cached_libs
 
       - name: List contents of artifact folders
         env:
@@ -191,6 +253,12 @@ jobs:
           echo ""
           echo "Contents of app/src/main/assets/models"
           ls app/src/main/assets/models
+
+          cp cached_libs/libonnxruntime.so /home/runner/work/chatapp-v2/chatapp-v2/qairt/2.31.0/lib/external/
+          cp cached_libs/libsherpa-onnx-jni.so /home/runner/work/chatapp-v2/chatapp-v2/qairt/2.31.0/lib/external/
+          ls -la /home/runner/work/chatapp-v2/chatapp-v2/qairt/2.31.0/lib/external/
+          ln -s /home/runner/work/chatapp-v2/chatapp-v2/sherpa-onnx-qnn/sherpa-onnx/kotlin-api/Tts.kt /home/runner/work/chatapp-v2/chatapp-v2/app/src/main/java/com/edgeai/chatappv2/Tts.kt
+
 
       - name: Build app
         run: ./gradlew :app:clean :app:assembleDebug :app:assembleDebugUnitTest :app:assembleDebugAndroidTest
