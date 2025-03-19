@@ -3,8 +3,14 @@ local.properties
 .DS_Store
 .cxx
 .idea
+.gradle
+.vscode
+
 # Build
 build
+
+# TTS
+app/src/main/java/com/edgeai/chatappv2/Tts.kt
 
 # Models
 app/src/main/assets/models/**
@@ -12,3 +18,7 @@ app/src/main/assets/models/**
 app/src/main/assets/*tiny*
 app/src/main/assets/*base*
 app/src/main/assets/*small*
+
+# TTS models
+app/src/main/assets/kokoro-int8-multi-lang-v1_1/**
+!app/src/main/assets/kokoro-int8-multi-lang-v1_1/.gitkeep

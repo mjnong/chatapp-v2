@@ -12,11 +12,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Rect;
+import android.widget.ToggleButton;
+import android.widget.LinearLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -47,6 +48,9 @@ public class Conversation extends AppCompatActivity {
     private String modelName;
     private GenieWrapper genieWrapper;
     private String TAG = "ChatApp";
+    // Toggle for real-time TTS
+    private boolean enableRealtimeTts = false;
+    private ToggleButton toggleRealtimeTts;
 
     private ActivityResultLauncher<String[]> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
@@ -95,7 +99,7 @@ public class Conversation extends AppCompatActivity {
         
         // Initialize UI components
         RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
-        Message_RecyclerViewAdapter adapter = new Message_RecyclerViewAdapter(this, messages);
+        MessageRecyclerViewAdapter adapter = new MessageRecyclerViewAdapter(this, messages);
         recyclerView.setAdapter(adapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
@@ -108,6 +112,28 @@ public class Conversation extends AppCompatActivity {
         loadWhisperButton = findViewById(R.id.load_whisper_button);
         userInput = findViewById(R.id.user_input);
         sendButton = findViewById(R.id.send_button);
+        
+        // Find the toggle button and set up listener
+        try {
+            toggleRealtimeTts = findViewById(R.id.toggle_realtime_tts);
+            toggleRealtimeTts.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                enableRealtimeTts = isChecked;
+                // Update appearance based on state
+                if (isChecked) {
+                    toggleRealtimeTts.setTextColor(getResources().getColor(R.color.colorAccent));
+                } else {
+                    toggleRealtimeTts.setTextColor(getResources().getColor(R.color.black));
+                }
+                Toast.makeText(this, 
+                    isChecked ? "Real-time TTS enabled" : "Real-time TTS disabled", 
+                    Toast.LENGTH_SHORT).show();
+            });
+            
+            // Set initial text color
+            toggleRealtimeTts.setTextColor(getResources().getColor(R.color.black));
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up toggle TTS button: " + e.getMessage());
+        }
 
         try {
             // Make QNN libraries discoverable
@@ -245,20 +271,31 @@ public class Conversation extends AppCompatActivity {
             }
         });
 
-        // Observe transcription result
+        // Observe transcription result and time together
         mainViewModel.getTranscriptionResult().observe(this, result -> {
             if (!result.isEmpty()) {
                 userInput.setText(result);
-                // Automatically send the transcribed message
-                sendUserMessage();
+                // Get the transcription time from the ViewModel
+                double transcriptionTime = mainViewModel.getTranscriptionTime().getValue().doubleValue();
+                
+                // Automatically send the transcribed message with transcription time
+                sendVoiceTranscribedMessage(result, transcriptionTime);
             }
         });
 
-        // Observe transcription time
+        // Observe transcription time for UI updates
         mainViewModel.getTranscriptionTime().observe(this, time -> {
             if (time.doubleValue() > 0) {
                 transcriptionStatus.setText(String.format(Locale.ENGLISH, 
-                    "Transcribed in %.1f seconds", time.doubleValue() / 1000.0));
+                    "Transcribed in %.3f seconds", time.doubleValue() / 1000.0));
+                
+                // If we have a transcription result already, update the UI
+                String currentResult = mainViewModel.getTranscriptionResult().getValue();
+                if (currentResult != null && !currentResult.isEmpty() && 
+                    userInput.getText().toString().equals(currentResult)) {
+                    // This ensures we have both the result and time before sending
+                    userInput.setText(currentResult);
+                }
             }
         });
     }
@@ -315,15 +352,94 @@ public class Conversation extends AppCompatActivity {
         mainViewModel.runInference();
     }
     
-    private void sendUserMessage() {
-        String userInputText = userInput.getText().toString();
+    /**
+     * Sends a message that was transcribed from voice input
+     * @param userInputText The transcribed text
+     * @param transcriptionTime The time it took to transcribe in milliseconds
+     */
+    private void sendVoiceTranscribedMessage(String userInputText, double transcriptionTime) {
         if (userInputText != null && !userInputText.trim().isEmpty()) {
             // Reset user message box
             userInput.setText("");
 
-            // Insert user message in the conversation
+            // Insert user message in the conversation with transcription time
             RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
-            Message_RecyclerViewAdapter adapter = (Message_RecyclerViewAdapter) recyclerView.getAdapter();
+            MessageRecyclerViewAdapter adapter = (MessageRecyclerViewAdapter) recyclerView.getAdapter();
+            
+            // Create a voice transcription message with the transcription time
+            assert adapter != null;
+            adapter.addVoiceTranscriptionMessage(userInputText, transcriptionTime);
+            adapter.notifyItemInserted(adapter.getItemCount() - 1);
+
+            // Scroll to bottom after adding user message
+            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+
+            ExecutorService service = Executors.newSingleThreadExecutor();
+            service.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final long startTime = System.currentTimeMillis();
+                    
+                    // Track if real-time TTS is enabled
+                    final boolean isRealtimeTtsEnabled = enableRealtimeTts;
+                    
+                    // Flag to track if we've started speaking yet
+                    final boolean[] isSpeakingStarted = {false};
+                    
+                    // Track accumulated text for speech
+                    final StringBuilder speechBuffer = new StringBuilder();
+                    
+                    genieWrapper.getResponseForPrompt(userInputText, new StringCallback() {
+                        @Override
+                        public void onNewString(String response) {
+                            runOnUiThread(() -> {
+                                // Update the last item in the adapter
+                                adapter.updateBotMessage(response, startTime);                        
+                                adapter.notifyItemChanged(messages.size() - 1);
+                                
+                                // Always scroll to bottom when receiving new message content
+                                recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+                                
+                                // Handle real-time TTS if enabled
+                                if (isRealtimeTtsEnabled) {
+                                    // Accumulate text for speech
+                                    speechBuffer.append(response);
+                                    
+                                    // If we haven't started speaking and have enough text, start speaking
+                                    if (!isSpeakingStarted[0] && speechBuffer.length() > 30) {
+                                        isSpeakingStarted[0] = true;
+                                        
+                                        // Start real-time TTS playback
+                                        String textToSpeak = speechBuffer.toString();
+                                        adapter.startLiveRealtimeTts(textToSpeak);
+                                        
+                                        // Clear buffer since we're now in continuous playback mode
+                                        speechBuffer.setLength(0);
+                                    }
+                                    // If we're already speaking and have a new chunk, send it for continuous processing
+                                    else if (isSpeakingStarted[0] && !response.isEmpty()) {
+                                        // Append new text to TTS
+                                        adapter.appendToRealtimeTts(response);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    }
+    
+    private void sendUserMessage() {
+        String userInputText = userInput.getText().toString();
+        if (!userInputText.trim().isEmpty()) {
+            // Reset user message box
+            userInput.setText("");
+
+            // Insert user message in the conversation (regular text input, not voice)
+            RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
+            MessageRecyclerViewAdapter adapter = (MessageRecyclerViewAdapter) recyclerView.getAdapter();
+            assert adapter != null;
             adapter.addMessage(new ChatMessage(userInputText, MessageSender.USER));
             adapter.notifyItemInserted(adapter.getItemCount() - 1);
 
@@ -336,6 +452,15 @@ public class Conversation extends AppCompatActivity {
                 public void run() {
                     final long startTime = System.currentTimeMillis();
                     
+                    // Track if real-time TTS is enabled
+                    final boolean isRealtimeTtsEnabled = enableRealtimeTts;
+                    
+                    // Flag to track if we've started speaking yet
+                    final boolean[] isSpeakingStarted = {false};
+                    
+                    // Track accumulated text for speech
+                    final StringBuilder speechBuffer = new StringBuilder();
+                    
                     genieWrapper.getResponseForPrompt(userInputText, new StringCallback() {
                         @Override
                         public void onNewString(String response) {
@@ -346,6 +471,29 @@ public class Conversation extends AppCompatActivity {
                                 
                                 // Always scroll to bottom when receiving new message content
                                 recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+                                
+                                // Handle real-time TTS if enabled
+                                if (isRealtimeTtsEnabled) {
+                                    // Accumulate text for speech
+                                    speechBuffer.append(response);
+                                    
+                                    // If we haven't started speaking and have enough text, start speaking
+                                    if (!isSpeakingStarted[0] && speechBuffer.length() > 30) {
+                                        isSpeakingStarted[0] = true;
+                                        
+                                        // Start real-time TTS playback
+                                        String textToSpeak = speechBuffer.toString();
+                                        adapter.startLiveRealtimeTts(textToSpeak);
+                                        
+                                        // Clear buffer since we're now in continuous playback mode
+                                        speechBuffer.setLength(0);
+                                    }
+                                    // If we're already speaking and have a new chunk, send it for continuous processing
+                                    else if (isSpeakingStarted[0] && !response.isEmpty()) {
+                                        // Append new text to TTS
+                                        adapter.appendToRealtimeTts(response);
+                                    }
+                                }
                             });
                         }
                     });
@@ -359,5 +507,18 @@ public class Conversation extends AppCompatActivity {
         super.onDestroy();
         // Release the Whisper model when the activity is destroyed
         mainViewModel.releaseModel();
+
+        // Stop any ongoing TTS
+        TtsEngine.INSTANCE.stopMediaPlayer();
+        
+        // Clean up the adapter resources
+        RecyclerView recyclerView = findViewById(R.id.chat_recycler_view);
+        if (recyclerView != null && recyclerView.getAdapter() != null) {
+            MessageRecyclerViewAdapter adapter = (MessageRecyclerViewAdapter) recyclerView.getAdapter();
+            // Stop any streaming TTS
+            adapter.stopStreamingTts();
+            // Regular cleanup
+            adapter.cleanup();
+        }
     }
 }
