@@ -166,7 +166,7 @@ jobs:
           key: ${{ runner.os }}-build-cache-${{ github.ref }}
 
       - name: Upload built libraries artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: built-libraries
           path: cached_libs/
