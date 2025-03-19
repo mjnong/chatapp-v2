@@ -200,6 +200,7 @@ jobs:
         run: |
           gh release download v0.0.1 -p 'qairt.zip'
           unzip -o "qairt.zip" -d .
+          rm qairt.zip
           ls qairt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
