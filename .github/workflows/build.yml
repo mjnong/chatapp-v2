@@ -235,11 +235,12 @@ jobs:
           name: whisperkit-models
           path: app/src/main/assets/
 
-      - name: Download built libraries artifact
-        uses: actions/download-artifact@v4
+      - name: Restore built libraries cache
+        id: cache-libs
+        uses: actions/cache@v3
         with:
-          name: built-libraries
           path: cached_libs
+          key: ${{ runner.os }}-build-cache-${{ github.ref }}
 
       - name: List contents of artifact folders
         env:
