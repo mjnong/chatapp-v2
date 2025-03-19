@@ -143,28 +143,40 @@ jobs:
           echo "ANDROID_NDK=$HOME/android-ndk/android-ndk-r27b" >> $GITHUB_ENV
           echo "Installed Android NDK at $HOME/android-ndk/android-ndk-r27b"
 
+      - name: Restore built libraries cache
+        id: cache-libs
+        uses: actions/cache@v3
+        with:
+          path: cached_libs
+          key: ${{ runner.os }}-build-cache-${{ github.ref }}
+
       - name: Clone sherpa-onnx-qnn repository
+        if: steps.cache-libs.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/mjnong/sherpa-onnx-qnn.git
 
       - name: Download ONNX QNN support files
+        if: steps.cache-libs.outputs.cache-hit != 'true'
         working-directory: sherpa-onnx-qnn
         run: |
           ./scripts/qairt/download_onnx_qnn.sh
 
       - name: Build for Android (arm64-v8a)
+        if: steps.cache-libs.outputs.cache-hit != 'true'
         working-directory: sherpa-onnx-qnn
         run: |
           chmod +x build-android-arm64-v8a.sh
           ./build-android-arm64-v8a.sh
 
       - name: Prepare cache folder for built libraries
+        if: steps.cache-libs.outputs.cache-hit != 'true'
         run: |
           mkdir -p cached_libs
           cp sherpa-onnx-qnn/build-android-arm64-v8a/install/lib/libonnxruntime.so cached_libs/
           cp sherpa-onnx-qnn/build-android-arm64-v8a/install/lib/libsherpa-onnx-jni.so cached_libs/
 
-      - name: Cache built libraries
+      - name: Update built libraries cache
+        if: steps.cache-libs.outputs.cache-hit != 'true'
         uses: actions/cache@v3
         with:
           path: cached_libs
@@ -175,7 +187,6 @@ jobs:
         with:
           name: built-libraries
           path: cached_libs/
-
 
   build-app:
     runs-on: ubuntu-latest
