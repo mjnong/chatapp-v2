@@ -298,5 +298,5 @@ jobs:
 
 
       - name: Build app
-        run: ./gradlew :app:clean :app:assembleDebug :app:assembleDebugUnitTest :app:assembleDebugAndroidTest
+        run: ./gradlew --scan :app:clean :app:assembleDebug :app:assembleDebugUnitTest :app:assembleDebugAndroidTest
 
