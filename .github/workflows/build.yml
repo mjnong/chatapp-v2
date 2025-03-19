@@ -254,6 +254,7 @@ jobs:
           rm -r qairt/2.31.0/lib/aarch64-ubuntu-gcc9.4
           rm -r qairt/2.31.0/lib/aarch64-oe-linux-gcc9.3
           rm -r qairt/2.31.0/lib/aarch64-oe-linux-gcc11.2
+          rm -r qairt/2.31.0/lib/python
 
           mkdir -p app/src/main/cpp/include
           cp -r qairt/2.31.0/include/Genie/* app/src/main/cpp/include
