@@ -136,7 +136,7 @@ jobs:
 
       - name: Install Android NDK
         run: |
-          # Download Android NDK (r25b for Linux is used as an example)
+          # Download Android NDK (r27b for Linux is used as an example)
           curl -L https://dl.google.com/android/repository/android-ndk-r27b-linux.zip -o ndk.zip
           unzip ndk.zip -d $HOME/android-ndk
           # Export the ANDROID_NDK path so subsequent steps can use it
@@ -217,7 +217,7 @@ jobs:
           path: app/src/main/assets/
 
       - name: Download built libraries artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: built-libraries
           path: cached_libs
