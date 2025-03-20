@@ -11,7 +11,23 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 </pre>
 </div>
 
-### 📱 Verified Devices
+## 📲 Install App
+
+1. Download `.apk`
+2. Push `.apk` to device:
+   ```bash
+   adb push ChatApp.apk /data/local/tmp
+   ```
+3. Open ADB Shell on android device:
+   ```bash
+   adb shell
+   ```
+   Then install `ChatApp.apk`:
+   ```bash
+   pm install -r /data/local/tmp/ChatApp.apk
+   ```
+
+## 📱 Verified Devices
 
 <div align="center">
   
@@ -21,7 +37,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 </div>
 
-### 🧠 Verified Models
+## 🧠 Verified Models
 
 <div align="center">
 
@@ -47,21 +63,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
   sdk.dir=<path to android sdk>
   ```
 
-## 📲 Install App
 
-1. Download `.apk`
-2. Push `.apk` to device:
-   ```bash
-   adb push ChatApp.apk /data/local/tmp
-   ```
-3. Open ADB Shell on android device:
-   ```bash
-   adb shell
-   ```
-   Then install `ChatApp.apk`:
-   ```bash
-   pm install -r /data/local/tmp/ChatApp.apk
-   ```
 
 ## 📁 Important Paths
 
