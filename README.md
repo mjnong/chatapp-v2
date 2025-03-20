@@ -133,7 +133,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 </details>
 
 <details>
-<summary>Building Sherpa-ONNX with QNN Support</summary>
+<summary>Sherpa-ONNX with QNN Support</summary>
 
 ## 
 
