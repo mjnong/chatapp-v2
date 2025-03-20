@@ -11,6 +11,19 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 </pre>
 </div>
 
+<div align="center">
+  <a href="https://mjnong.github.io/chatapp-v2/assets/chatappv2.mp4">
+    <img src="https://img.shields.io/badge/Watch%20Demo-ChatApp%20V2%20with%20Llama%203.2-blue?style=for-the-badge&logo=github" alt="Watch ChatApp V2 Demo"/>
+  </a>
+</div>
+
+<div align="center">
+  <a href="https://mjnong.github.io/chatapp-v2/assets/realtimetts.mp4">
+    <img src="https://img.shields.io/badge/Watch%20Demo-Real--time%20TTS%20Feature-orange?style=for-the-badge&logo=github" alt="Watch Real-time TTS Demo"/>
+  </a>
+</div>
+
+
 ## 📲 Install App
 
 1. Download `.apk`
@@ -225,33 +238,6 @@ ls -la /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx)
 
 </details>
-
-## 📱 Demo Videos
-
-### App Showcase
-
-<div align="center">
-  <a href="https://mjnong.github.io/chatapp-v2/assets/chatappv2.mp4">
-    <img src="https://img.shields.io/badge/Watch%20Demo-ChatApp%20V2%20with%20Llama%203.2-blue?style=for-the-badge&logo=github" alt="Watch ChatApp V2 Demo"/>
-  </a>
-</div>
-
-Experience ChatApp V2 in action, featuring:
-- Conversational interactions with Llama 3.2 3B
-- Customizable voice settings (speed and speaker selection)
-- On-device processing using the Snapdragon® NPU
-
-### Real-time TTS Feature
-
-<div align="center">
-  <a href="https://mjnong.github.io/chatapp-v2/assets/realtimetts.mp4">
-    <img src="https://img.shields.io/badge/Watch%20Demo-Real--time%20TTS%20Feature-orange?style=for-the-badge&logo=github" alt="Watch Real-time TTS Demo"/>
-  </a>
-</div>
-
-The real-time TTS feature provides:
-- Instant voice feedback as the model generates text
-- Natural-sounding speech with sentence-level processing
 
 ## 📄 License
 
