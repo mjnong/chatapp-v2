@@ -60,7 +60,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 <div align="center">
 
-| Component       | Model/Device                   | OS / Context Length           |
+| Component       | Model/Device                   | Context Length                |
 |-----------------|--------------------------------|-------------------------------|
 | LLM             | Llama 3.2 3B                   | 2048                          |
 | STT             | Whisper Tiny                   | –                             |
