@@ -170,7 +170,10 @@ ls -la /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 
 For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx),
 
-### Building WhisperKit Android to Support Voice Transcription (English)
+### Builds
+
+<details>
+<summary>Building WhisperKit Android to Support Voice Transcription (English)</summary>
 
 1. Clone repository:
    ```bash
@@ -221,6 +224,8 @@ For more information, refer to the [Sherpa-ONNX documentation](https://github.co
    From `build/android/`:
     - `libwhisperkit.so`
     - `libnative-whisperkit.so`
+
+</details>
 
 ## 📱 Demo Videos
 
