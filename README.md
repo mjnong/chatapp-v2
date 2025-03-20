@@ -11,12 +11,6 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 </pre>
 </div>
 
-## ⚠️ Current Limitations
-
-ChatApp V2 **does not work on all** consumer devices with Android 14.
-
-Genie SDK requires a newer meta-build to run LLMs on-device. Functionality may vary depending on your phone vendor's meta-build selection.
-
 ### 📱 Verified Devices
 
 <div align="center">
