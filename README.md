@@ -40,17 +40,23 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
    pm install -r /data/local/tmp/ChatApp.apk
    ```
 
-## 📱 Verified Devices
+## Verified
+
+<details>
+<summary>📱  Devices</summary>
 
 <div align="center">
-  
+    
 | Device | OS |
 |--------|------|
 | Samsung Galaxy S25 Ultra | One UI 6.1 (Android 15) |
 
 </div>
 
-## 🧠 Verified Models
+</details>
+
+<details>
+<summary>🧠  Models</summary>
 
 <div align="center">
 
@@ -62,7 +68,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 </div>
 
-💡 If you have a listed device, update to the specified OS version or newer to run the Sample App locally.
+</details>
 
 ## 🛠️ Requirements
 
