@@ -70,7 +70,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 </details>
 
-### Builds
+### 🛠️ Builds
 
 <details>
 <summary>Requirements</summary>
