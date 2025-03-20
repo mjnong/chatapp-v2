@@ -70,9 +70,10 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 </details>
 
-## 🛠️ Requirements
+### Builds
 
-### Platform
+<details>
+<summary>Requirements</summary>
 
 - Snapdragon® Gen 3 or Snapdragon® 8 Elite
 - QNN SDK version 2.31.0 or newer
@@ -83,8 +84,10 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
   ```
 
 
+</details>
 
-## 📁 Important Paths
+<details>
+<summary>Important Paths</summary>
 
 - 🔧 `/opt/qcom/aistack/qairt/2.31.0`: Example QNN-SDK location
 - 📚 `/opt/qcom/aitstack/qairt/2.31.0/lib/external`: WhisperKit Android `.so` files
@@ -94,7 +97,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 - 📊 `app/src/main/assets/models`: LLM models location
 - ⚙️ `app/src/main/assets/htp_config`: HTP config files location
 
-### Builds
+</details>
 
 <details>
 <summary>WhisperKit Android</summary>
