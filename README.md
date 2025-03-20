@@ -135,8 +135,6 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 <details>
 <summary>Sherpa-ONNX with QNN Support</summary>
 
-## 
-
 This guide walks you through building Sherpa-ONNX with Qualcomm Neural Network (QNN) support for enhanced performance on Snapdragon devices.
 
 ### Prerequisites
@@ -146,16 +144,6 @@ This guide walks you through building Sherpa-ONNX with Qualcomm Neural Network (
 - [Qualcomm AI Stack](https://developer.qualcomm.com/software/qualcomm-ai-stack) installed (v2.31.0 or compatible version)
 - [CMake](https://cmake.org/download/) 3.18 or newer
 - Java Development Kit (JDK) 11 or newer
-
-### Troubleshooting
-
-- **Build errors related to QNN SDK**: Ensure `QNN_SDK_PATH` points to a valid QNN SDK installation
-- **Permission issues when copying libraries**: Make sure you have write permissions to the target directory
-- **Missing dependencies**: Run `ldd build-android-arm64-v8a/install/lib/libonnxruntime.so` to check for missing dependencies
-
-### ℹ️ Info
-
-For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx),
 
 ### Environment Setup
 
@@ -225,6 +213,16 @@ sudo cp build-android-arm64-v8a/install/lib/libsherpa-onnx-jni.so /opt/qcom/aits
 # Check that the libraries exist in the target directory
 ls -la /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 ```
+
+### Troubleshooting
+
+- **Build errors related to QNN SDK**: Ensure `QNN_SDK_PATH` points to a valid QNN SDK installation
+- **Permission issues when copying libraries**: Make sure you have write permissions to the target directory
+- **Missing dependencies**: Run `ldd build-android-arm64-v8a/install/lib/libonnxruntime.so` to check for missing dependencies
+
+### ℹ️ Info
+
+For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx)
 
 </details>
 
