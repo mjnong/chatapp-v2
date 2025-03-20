@@ -91,6 +91,76 @@ This guide walks you through building Sherpa-ONNX with Qualcomm Neural Network (
 - [CMake](https://cmake.org/download/) 3.18 or newer
 - Java Development Kit (JDK) 11 or newer
 
+### Troubleshooting
+
+- **Build errors related to QNN SDK**: Ensure `QNN_SDK_PATH` points to a valid QNN SDK installation
+- **Permission issues when copying libraries**: Make sure you have write permissions to the target directory
+- **Missing dependencies**: Run `ldd build-android-arm64-v8a/install/lib/libonnxruntime.so` to check for missing dependencies
+
+### ℹ️ Info
+
+For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx),
+
+### Builds
+
+<details>
+<summary>WhisperKit Android</summary>
+
+1. Clone repository:
+   ```bash
+   git clone https://github.com/argmaxinc/WhisperKitAndroid.git
+   cd WhisperKitAndroid
+   ```
+2. Update `jni/NativeWhisperKit.cpp` function names to match this project
+     ```bash
+     Java_com_edgeai_chatappv2_WhisperKitNative_<function_name>
+     ```
+3. Update `Whipserkit/src/TranscribeTask.cpp` to support the correct `lib`, `cache` and `files` path when building for `jni`.
+     ```cpp
+     #if (JNI_BUILD)
+     #define TRANSCRIBE_TASK_TFLITE_ROOT_PATH    "/data/user/0/com.edgeai.chatappv2/files"
+     #define TRANSCRIBE_TASK_DEFAULT_LIB_DIR     "/data/user/0/com.edgeai.chatappv2/lib"
+     #define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR   "/data/user/0/com.edgeai.chatappv2/cache"
+     #elif (QNN_DELEGATE || GPU_DELEGATE) 
+     ...
+     ```
+4. Update versions in `scripts/dev_env.sh` and `scripts/Dockerfile` with correct QNN SDK version e.g. `2.31.0`
+    1. Example `scripts/dev_env.sh`
+     ```bash
+     aria2c $ARIA_OPTIONS -d $BUILD_DIR https://repo1.maven.org/maven2/com/qualcomm/qti/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar
+     aria2c $ARIA_OPTIONS -d $BUILD_DIR https://repo1.maven.org/maven2/com/qualcomm/qti/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar
+     ```
+    2. Example `scripts/Dockerfile`
+     ```bash
+     ARG QNN_RUNTIME=qnn-runtime-2.31.0.aar
+     ARG QNN_TFLITE_DELEGATE=qnn-litert-delegate-2.31.0.aar
+     ```
+5. Build dev environment `make env`
+6. Build `.so` files inside of dev environment:
+   ```bash
+   make build jni
+   ```
+7. Copy `.so` files to `/opt/qcom/aitstack/qairt/2.31.0/lib/external`, files to transfer:
+    
+    From `external/libs/android/`:
+    - `libavcodec.so`
+    - `libavformat.so`
+    - `libavutil.so`
+    - `libqnn_delegate_jni.so`
+    - `libSDL3.so`
+    - `libswresample.so`
+    - `libtensorflowlite.so`
+    - `libtensorflowlite_gpu_delegate.so`
+   
+   From `build/android/`:
+    - `libwhisperkit.so`
+    - `libnative-whisperkit.so`
+
+</details>
+
+<details>
+<summary>Kokoro</summary>
+
 ### Environment Setup
 
 Ensure the following environment variables are set:
@@ -159,71 +229,6 @@ sudo cp build-android-arm64-v8a/install/lib/libsherpa-onnx-jni.so /opt/qcom/aits
 # Check that the libraries exist in the target directory
 ls -la /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 ```
-
-### Troubleshooting
-
-- **Build errors related to QNN SDK**: Ensure `QNN_SDK_PATH` points to a valid QNN SDK installation
-- **Permission issues when copying libraries**: Make sure you have write permissions to the target directory
-- **Missing dependencies**: Run `ldd build-android-arm64-v8a/install/lib/libonnxruntime.so` to check for missing dependencies
-
-### ℹ️ Info
-
-For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx),
-
-### Builds
-
-<details>
-<summary>Building WhisperKit Android to Support Voice Transcription (English)</summary>
-
-1. Clone repository:
-   ```bash
-   git clone https://github.com/argmaxinc/WhisperKitAndroid.git
-   cd WhisperKitAndroid
-   ```
-2. Update `jni/NativeWhisperKit.cpp` function names to match this project
-     ```bash
-     Java_com_edgeai_chatappv2_WhisperKitNative_<function_name>
-     ```
-3. Update `Whipserkit/src/TranscribeTask.cpp` to support the correct `lib`, `cache` and `files` path when building for `jni`.
-     ```cpp
-     #if (JNI_BUILD)
-     #define TRANSCRIBE_TASK_TFLITE_ROOT_PATH    "/data/user/0/com.edgeai.chatappv2/files"
-     #define TRANSCRIBE_TASK_DEFAULT_LIB_DIR     "/data/user/0/com.edgeai.chatappv2/lib"
-     #define TRANSCRIBE_TASK_DEFAULT_CACHE_DIR   "/data/user/0/com.edgeai.chatappv2/cache"
-     #elif (QNN_DELEGATE || GPU_DELEGATE) 
-     ...
-     ```
-4. Update versions in `scripts/dev_env.sh` and `scripts/Dockerfile` with correct QNN SDK version e.g. `2.31.0`
-    1. Example `scripts/dev_env.sh`
-     ```bash
-     aria2c $ARIA_OPTIONS -d $BUILD_DIR https://repo1.maven.org/maven2/com/qualcomm/qti/qnn-runtime/2.31.0/qnn-runtime-2.31.0.aar
-     aria2c $ARIA_OPTIONS -d $BUILD_DIR https://repo1.maven.org/maven2/com/qualcomm/qti/qnn-litert-delegate/2.31.0/qnn-litert-delegate-2.31.0.aar
-     ```
-    2. Example `scripts/Dockerfile`
-     ```bash
-     ARG QNN_RUNTIME=qnn-runtime-2.31.0.aar
-     ARG QNN_TFLITE_DELEGATE=qnn-litert-delegate-2.31.0.aar
-     ```
-5. Build dev environment `make env`
-6. Build `.so` files inside of dev environment:
-   ```bash
-   make build jni
-   ```
-7. Copy `.so` files to `/opt/qcom/aitstack/qairt/2.31.0/lib/external`, files to transfer:
-    
-    From `external/libs/android/`:
-    - `libavcodec.so`
-    - `libavformat.so`
-    - `libavutil.so`
-    - `libqnn_delegate_jni.so`
-    - `libSDL3.so`
-    - `libswresample.so`
-    - `libtensorflowlite.so`
-    - `libtensorflowlite_gpu_delegate.so`
-   
-   From `build/android/`:
-    - `libwhisperkit.so`
-    - `libnative-whisperkit.so`
 
 </details>
 
