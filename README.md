@@ -1,10 +1,15 @@
 # 🤖 ChatApp V2
 
-Chat application for Android on Snapdragon® with [Llama 3.2 3B](https://aihub.qualcomm.com/compute/models/llama_v3_2_3b_chat_quantized) using Genie SDK.
+This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
-This app showcases the use of Genie C++ APIs from [QNN SDK](https://qpm.qualcomm.com/#/main/tools/details/qualcomm_ai_engine_direct) to run and accelerate LLMs using the Snapdragon® Neural Processing Unit (NPU).
-
-🎙️ The app also supports loading of Whisper for voice input.
+<div align="center">
+<pre>
++---------------+       +---------------------+       +---------------+
+|      STT      |       |         LLM         |       |      TTS      |
+|   (whisper)   |  ---> |   (llama3.2-3B)     |  ---> |   (kokoro)    |
++---------------+       +---------------------+       +---------------+
+</pre>
+</div>
 
 ## ⚠️ Current Limitations
 
@@ -14,26 +19,25 @@ Genie SDK requires a newer meta-build to run LLMs on-device. Functionality may v
 
 ### 📱 Verified Devices
 
+<div align="center">
+  
 | Device | OS |
 |--------|------|
 | Samsung Galaxy S25 Ultra | One UI 6.1 (Android 15) |
 
+</div>
+
 ### 🧠 Verified Models
 
-**LLM**
-| Model | Context length |
-|-------|----------------|
-| Llama 3.2 3B | 2048 |
+<div align="center">
 
-**Whisper (STT)**
-| Model |
-|-------|
-| Whisper Tiny |
+| Component       | Model/Device                   | OS / Context Length           |
+|-----------------|--------------------------------|-------------------------------|
+| LLM             | Llama 3.2 3B                   | 2048                          |
+| STT             | Whisper Tiny                   | –                             |
+| TTS             | Kokoro int8 Multi-lang v1.1    | –                             |
 
-**Text-To-Speech (TTS)**
-| Model |
-|-------|
-| Kokoro int8 Multi-lang v1.1 |
+</div>
 
 💡 If you have a listed device, update to the specified OS version or newer to run the Sample App locally.
 
