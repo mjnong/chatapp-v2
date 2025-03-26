@@ -1,0 +1,6 @@
+{
+  "backend_path": "{{NATIVE_LIB_DIR}}/libQnnHtp.so",
+  "soc_model": "69",
+  "htp_arch": "79",
+  "enable_htp_shared_memory_allocator": "1"
+}

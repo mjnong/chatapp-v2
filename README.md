@@ -69,7 +69,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 - 🔧 `/opt/qcom/aistack/qairt/2.31.0`: Example QNN-SDK location
 - 📚 `/opt/qcom/aitstack/qairt/2.31.0/lib/external`: WhisperKit Android `.so` files
-- 📋 `app/src/main/assets/config/models.json`: List of available models
+- 📋 `app/src/main/assets/configs/models.json`: List of available models
 - 🗣️ `app/src/main/assets/kokoro-int8-multi-lang-v1_1`: Assets for TTS support, Download from [HERE](https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models)
 - 🗂️ `app/src/main/assets/`: Whisper models location
 - 📊 `app/src/main/assets/models`: LLM models location
@@ -180,6 +180,12 @@ cd sherpa-onnx-qnn
 
 ```bash
 ln -s <sherpa-onnx-qnn>/sherpa-onnx/kotlin-api/Tts.kt <android-project-path>/app/src/main/java/com/edgeai/chatappv2/Tts.kt
+```
+
+#### System Link QNN Api file from Sherpa-ONNX
+
+```bash
+ln -s <sherpa-onnx-qnn>/sherpa-onnx/kotlin-api/Qnn.kt <android-project-path>/app/src/main/java/com/edgeai/chatappv2/Qnn.kt
 ```
 
 ### Step 2: Build for Android (arm64-v8a)

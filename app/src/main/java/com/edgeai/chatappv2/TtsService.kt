@@ -45,7 +45,7 @@ class TtsService : TextToSpeechService() {
 
         return if (lang == TtsEngine.lang) {
             Log.i(TAG, "creating tts, lang :$lang")
-            TtsEngine.createTts(application)
+            TtsEngine.createTts(application, BuildConfig.SOCKET_ID)
             TextToSpeech.LANG_AVAILABLE
         } else {
             Log.i(TAG, "lang $lang not supported, tts engine lang: ${TtsEngine.lang}")

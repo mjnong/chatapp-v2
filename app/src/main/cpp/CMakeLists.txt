@@ -19,14 +19,24 @@ include_directories("includes")
 # Include Genie headers here
 include_directories(${GENIE_HEADERS_PATH})
 
+# Add the main app library
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         PromptHandler.cpp
         GenieWrapper.cpp
         GenieLib.cpp)
 
+# Add native-helper library for environment variable management
+add_library(native-helper SHARED
+        native-helper.cpp)
+        
 # Link libGenie.so here
 target_link_libraries(${CMAKE_PROJECT_NAME}
         "${GENIE_LIB_PATH}"
+        android
+        log)
+        
+# Link native-helper with required libraries
+target_link_libraries(native-helper
         android
         log)

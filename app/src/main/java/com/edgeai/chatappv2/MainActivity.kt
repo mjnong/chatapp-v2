@@ -1,7 +1,9 @@
 package com.edgeai.chatappv2
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -56,6 +58,8 @@ class MainActivity : AppCompatActivity() {
             // Native WhisperKit libraries
             "whisperkit",
             "native-whisper",
+            // Add our native-helper library
+            "native-helper",
             "app"
         )
 
@@ -163,6 +167,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Set ADSP_LIBRARY_PATH as early as possible
+        setAdspLibraryPath()
 
         // Hide the action bar
         supportActionBar?.hide()
@@ -170,9 +177,12 @@ class MainActivity : AppCompatActivity() {
         val libraryLoader = LibraryLoader()
         libraryLoader.loadAllLibraries()
         
+        // Check audio system
+        checkAudioSystem()
+        
         // Initialize TTS Engine
         Log.i(TAG, "Start to initialize TTS")
-        TtsEngine.createTts(this)
+        TtsEngine.createTts(this, BuildConfig.SOCKET_ID)
         Log.i(TAG, "TTS Engine initialized")
 
         try {
@@ -217,8 +227,8 @@ class MainActivity : AppCompatActivity() {
 
             setContentView(R.layout.activity_main)
             
-            // Set window soft input mode to adjust resize
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+//            // Set window soft input mode to adjust resize
+//            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             
             // Get the singleton instance of MainViewModel
             mainViewModel = MainViewModel.getInstance()
@@ -270,6 +280,85 @@ class MainActivity : AppCompatActivity() {
                     else -> { /* Handle other states if needed */ }
                 }
             }
+        }
+    }
+
+    /**
+     * Set ADSP_LIBRARY_PATH environment variable to the native library directory
+     * This is critical for components that need to find native libraries at runtime
+     */
+    private fun setAdspLibraryPath() {
+        try {
+            val success = NativeHelper.setAdspLibraryPath(this)
+            if (success) {
+                val path = NativeHelper.getAdspLibraryPath()
+                Log.i(TAG, "ADSP_LIBRARY_PATH set to: $path")
+                
+                // In debug builds, show a quick toast to confirm it's set
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(this, "ADSP_LIBRARY_PATH set", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Log.e(TAG, "Failed to set ADSP_LIBRARY_PATH")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting ADSP_LIBRARY_PATH: ${e.message}")
+        }
+    }
+
+    /**
+     * Check the audio system and volume levels
+     */
+    private fun checkAudioSystem() {
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+            val volumePercent = (currentVolume.toFloat() / maxVolume.toFloat() * 100).toInt()
+            
+            Log.i(TAG, "Audio system check: Current volume: $currentVolume/$maxVolume ($volumePercent%)")
+            
+            // Check if volume is too low
+            if (volumePercent < 30) {
+                Log.w(TAG, "Audio volume is low, TTS might not be audible")
+                // Show toast only if in debug mode
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(this, 
+                        "Media volume is low ($volumePercent%). Consider increasing for better TTS.", 
+                        Toast.LENGTH_LONG).show()
+                }
+            }
+            
+            // Check audio focus mode
+            val mode = when (audioManager.mode) {
+                AudioManager.MODE_NORMAL -> "NORMAL"
+                AudioManager.MODE_RINGTONE -> "RINGTONE"
+                AudioManager.MODE_IN_CALL -> "IN_CALL"
+                AudioManager.MODE_IN_COMMUNICATION -> "IN_COMMUNICATION"
+                else -> "UNKNOWN(${audioManager.mode})"
+            }
+            Log.i(TAG, "Audio mode: $mode")
+            
+            // Check if the device is muted
+            val isMusicMuted = audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+            Log.i(TAG, "Is music stream muted: $isMusicMuted")
+            
+            if (isMusicMuted) {
+                Log.w(TAG, "Music stream is muted! TTS will not be audible")
+                Toast.makeText(this, "Music stream is muted. TTS will not be audible.", Toast.LENGTH_LONG).show()
+            }
+            
+            // Encourage volume increase if it's very low
+            if (currentVolume == 0) {
+                // Request volume increase
+                audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.ADJUST_RAISE,
+                    AudioManager.FLAG_SHOW_UI
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking audio system: ${e.message}")
         }
     }
 }

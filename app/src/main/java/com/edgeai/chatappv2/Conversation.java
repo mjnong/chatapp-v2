@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import android.content.Context;
+import android.media.AudioManager;
+
 public class Conversation extends AppCompatActivity {
 
     ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>(1000);
@@ -190,6 +193,8 @@ public class Conversation extends AppCompatActivity {
                 }
             });
 
+            // Setup audio for proper TTS playback
+            setupAudioForTts();
         } catch (Exception e) {
             Log.e("ChatApp", "Error during conversation with Chatbot: " + e.toString());
             Toast.makeText(this, "Unexpected error observed. Exiting app.", Toast.LENGTH_SHORT).show();
@@ -414,6 +419,13 @@ public class Conversation extends AppCompatActivity {
                                 
                                 // Handle real-time TTS if enabled
                                 if (isRealtimeTtsEnabled) {
+                                    // First check audio state
+                                    if (!checkAudioBeforeTts()) {
+                                        // Skip TTS if audio issues detected
+                                        Log.w(TAG, "Skipping TTS due to audio issues");
+                                        return;
+                                    }
+                                    
                                     // Accumulate text for speech
                                     speechBuffer.append(response);
                                     
@@ -486,6 +498,13 @@ public class Conversation extends AppCompatActivity {
                                 
                                 // Handle real-time TTS if enabled
                                 if (isRealtimeTtsEnabled) {
+                                    // First check audio state
+                                    if (!checkAudioBeforeTts()) {
+                                        // Skip TTS if audio issues detected
+                                        Log.w(TAG, "Skipping TTS due to audio issues");
+                                        return;
+                                    }
+                                    
                                     // Accumulate text for speech
                                     speechBuffer.append(response);
                                     
@@ -511,6 +530,97 @@ public class Conversation extends AppCompatActivity {
                     });
                 }
             });
+        }
+    }
+    
+    /**
+     * Set up audio system for optimal TTS playback
+     */
+    private void setupAudioForTts() {
+        try {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            
+            // Get current and max volumes
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            int volumePercent = (int)(((float)currentVolume / maxVolume) * 100);
+            
+            Log.i(TAG, "TTS Audio settings: Current volume: " + currentVolume + "/" + maxVolume + 
+                  " (" + volumePercent + "%)");
+            
+            // Check if volume is too low and show a helpful message
+            if (volumePercent < 15) {
+                Log.w(TAG, "Audio volume is very low, TTS might not be audible");
+                Toast.makeText(this, 
+                    "Media volume is very low. Please increase volume to hear TTS.", 
+                    Toast.LENGTH_LONG).show();
+                
+                // Optionally request volume increase
+                audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.ADJUST_RAISE,
+                    AudioManager.FLAG_SHOW_UI
+                );
+            }
+            
+            // Ensure we're in normal audio mode
+            if (audioManager.getMode() != AudioManager.MODE_NORMAL) {
+                Log.i(TAG, "Setting audio mode to NORMAL");
+                audioManager.setMode(AudioManager.MODE_NORMAL);
+            }
+            
+            // Check if device is muted
+            boolean isMusicMuted = audioManager.isStreamMute(AudioManager.STREAM_MUSIC);
+            Log.i(TAG, "Is music stream muted: " + isMusicMuted);
+            
+            if (isMusicMuted) {
+                Log.w(TAG, "Music stream is muted! TTS will not be audible");
+                Toast.makeText(this, 
+                    "Audio is muted. Please unmute to hear TTS output.", 
+                    Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up audio for TTS: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Utility method to check audio before starting TTS
+     * @return true if audio is in a good state, false otherwise
+     */
+    private boolean checkAudioBeforeTts() {
+        try {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            
+            // Get current volume
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            
+            // Check if muted or too low
+            if (audioManager.isStreamMute(AudioManager.STREAM_MUSIC)) {
+                Log.w(TAG, "Cannot play TTS - Audio is muted");
+                Toast.makeText(this, "Cannot play TTS - Audio is muted", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            
+            if (currentVolume == 0) {
+                Log.w(TAG, "Cannot play TTS - Volume is set to zero");
+                Toast.makeText(this, "Cannot play TTS - Volume is set to zero", Toast.LENGTH_SHORT).show();
+                
+                // Show volume UI
+                audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.ADJUST_SAME,
+                    AudioManager.FLAG_SHOW_UI
+                );
+                
+                return false;
+            }
+            
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking audio for TTS: " + e.getMessage());
+            return true; // Still allow playback on error
         }
     }
     

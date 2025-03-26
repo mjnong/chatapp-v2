@@ -1,6 +1,7 @@
 package com.edgeai.chatappv2
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -8,6 +9,7 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.FileUtils
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +17,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import com.edgeai.chatappv2.MainActivity.Companion.TAG
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.channels.Channel
 
 /**
@@ -24,6 +28,15 @@ enum class TtsPlaybackMode {
     REAL_TIME,   // Use AudioTrack for real-time playback during generation
     FILE_BASED   // Save to file first, then play with MediaPlayer
 }
+
+data class Options (
+    @SerializedName("soc_model")
+    var socModel: String? = null,
+    @SerializedName("htp_arch")
+    var htpArch: String? = null,
+    @SerializedName("backend_path")
+    var backendPath: String? = null,
+)
 
 object TtsEngine {
     var tts: OfflineTts? = null
@@ -216,17 +229,49 @@ object TtsEngine {
                 val filename = "$applicationPath/generated.wav"
                 // Make sure any previous instance is stopped first
                 stopMediaPlayer()
+
+                val wavFile = File(filename)
+
+                // Create a copy of the file in SDCARD so it can be adb pulled
+                val copyFile = File(context.getExternalFilesDir(null), "generated.wav")
+                if (!copyFile.exists()) {
+                    FileUtils.copy(wavFile.inputStream(), copyFile.outputStream())
+                    Log.i(TAG, "Generated WAV file copied to SDCARD: ${copyFile.absolutePath}")
+                } else {
+                    Log.i(TAG, "Generated WAV file already exists in SDCARD")
+                }
+
+                // Prepare the media player
+                player = MediaPlayer.create(
+                    context,
+                    Uri.fromFile(copyFile)
+                )
                 
                 player = MediaPlayer.create(
                     context,
-                    Uri.fromFile(File(filename))
+                    Uri.fromFile(wavFile)
                 )
+
+                if (!wavFile.exists()) {
+                    Log.e(TAG, "WAV file does not exist at: ${wavFile.absolutePath}")
+                } else if (wavFile.length() == 0L) {
+                    Log.e(TAG, "WAV file is empty at: ${wavFile.absolutePath}")
+                } else {
+                    Log.d(TAG, "WAV file exists, size: ${wavFile.length()} bytes at ${wavFile.absolutePath}")
+                }
                 
                 if (player == null) {
                     Log.e(TAG, "Failed to create MediaPlayer")
                     isTtsRunning = false
                     return
                 }
+                
+                // Set volume to maximum
+                player?.setVolume(1.0f, 1.0f)
+                
+                // Log media player info
+                Log.i(TAG, "MediaPlayer created successfully. Audio session ID: ${player?.audioSessionId}, " +
+                    "isPlaying: ${player?.isPlaying}")
                 
                 // Set completion listener
                 player?.setOnCompletionListener {
@@ -261,14 +306,19 @@ object TtsEngine {
         playbackCompletionListener?.invoke()
     }
 
-    fun createTts(context: Context) {
+    fun createTts(context: Context, socModel: String) {
         Log.i(TAG, "Init Next-gen Kaldi TTS")
+        
+        // Set ADSP_LIBRARY_PATH environment variable before initializing TTS
+        NativeHelper.setAdspLibraryPath(context)
+        
         if (tts == null) {
-            initTts(context)
+            initTts(context, socModel)
         }
     }
 
-    private fun initTts(context: Context) {
+    private fun initTts(context: Context, socModel: String) {
+        // Remove the previous call to setAdspLibraryPath since we're now calling it in createTts
         assets = context.assets
 
         if (dataDir != null) {
@@ -284,6 +334,51 @@ object TtsEngine {
             }
         }
 
+        // Load and parse QNN configuration using Gson
+        val qnnConfigJson = assets?.open("configs/qairt/${socModel}.json")?.bufferedReader()?.use { reader ->
+            Gson().fromJson(reader, Options::class.java)
+        }
+
+        if (qnnConfigJson == null) {
+            throw RuntimeException("Failed to load QNN configuration")
+        }
+
+        // Log the parsed configuration
+        Log.i(TAG, "Parsed QNN config: ${Gson().toJson(qnnConfigJson)}")
+
+        // Get application native lib path
+        val applicationInfo = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+        val nativeLibPath = applicationInfo.nativeLibraryDir
+
+        // Resolve native library path placeholder
+        val resolvedBackendPath = qnnConfigJson.backendPath?.replace("{{NATIVE_LIB_DIR}}", nativeLibPath)
+            ?: throw RuntimeException("Backend path is missing in QNN configuration")
+        
+        // Map the htpArch string to enum value
+        val htpArch = try {
+            when (qnnConfigJson.htpArch) {
+                "0" -> QnnOptions.HtpArch.DEFAULT
+                "68" -> QnnOptions.HtpArch.ARCH_68
+                "69" -> QnnOptions.HtpArch.ARCH_69
+                "73" -> QnnOptions.HtpArch.ARCH_73
+                "75" -> QnnOptions.HtpArch.ARCH_75
+                "79" -> QnnOptions.HtpArch.ARCH_79
+                else -> QnnOptions.HtpArch.DEFAULT
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Invalid HTP architecture value: ${qnnConfigJson.htpArch}. Using DEFAULT.")
+            QnnOptions.HtpArch.DEFAULT
+        }
+        
+        // Build QNN configuration
+        val qnnConfig = qnnConfigJson.socModel?.let {
+            QnnConfigBuilder()
+                .htpArch(htpArch)
+                .backendPath(resolvedBackendPath)
+                .socModel(it)
+                .build()
+        }.orEmpty()
+
         val config = getOfflineTtsConfig(
             modelDir = modelDir!!,
             modelName = modelName ?: "",
@@ -294,7 +389,8 @@ object TtsEngine {
             dataDir = dataDir ?: "",
             dictDir = dictDir ?: "",
             ruleFsts = ruleFsts ?: "",
-            ruleFars = ruleFars ?: ""
+            ruleFars = ruleFars ?: "",
+            qnnJsonConfig = qnnConfig,
         )
 
         // Load saved settings
@@ -303,13 +399,13 @@ object TtsEngine {
 
         tts = OfflineTts(assetManager = assets, config = config)
         Log.i(TAG, "Start to initialize AudioTrack")
-        
+
         if (playbackMode == TtsPlaybackMode.REAL_TIME) {
             initAudioTrack()
         } else {
             Log.i(TAG, "Skipping AudioTrack initialization in ${playbackMode.name} mode")
         }
-        
+
         Log.i(TAG, "Finish initializing TTS")
     }
 
@@ -367,12 +463,12 @@ object TtsEngine {
             Log.i(TAG, "AudioTrack initialization skipped in ${playbackMode.name} mode")
             return
         }
-        
+
         if (tts == null) {
             Log.e(TAG, "TTS not initialized, can't create AudioTrack")
             return
         }
-        
+
         val sampleRate = tts!!.sampleRate()
         val bufLength = AudioTrack.getMinBufferSize(
             sampleRate,
@@ -381,7 +477,8 @@ object TtsEngine {
         )
         Log.i(TAG, "sampleRate: $sampleRate, buffLength: $bufLength")
 
-        val attr = AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        val attr = AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .build()
 
@@ -396,6 +493,43 @@ object TtsEngine {
             AudioManager.AUDIO_SESSION_ID_GENERATE
         )
         
+        // Explicitly set the volume to maximum
+        track?.setVolume(1.0f)
+        
+        // Log current audio track state
+        logAudioTrackState()
+
         Log.i(TAG, "AudioTrack initialized successfully")
+    }
+
+    /**
+     * Log the current state of the audio track for diagnostics
+     */
+    private fun logAudioTrackState() {
+        track?.let { audioTrack ->
+            Log.i(TAG, "AudioTrack state: " +
+                  "playState=${when(audioTrack.playState) {
+                      AudioTrack.PLAYSTATE_STOPPED -> "STOPPED"
+                      AudioTrack.PLAYSTATE_PAUSED -> "PAUSED"
+                      AudioTrack.PLAYSTATE_PLAYING -> "PLAYING"
+                      else -> "UNKNOWN"
+                  }}, " +
+                  "playbackRate=${audioTrack.playbackRate}, " +
+                  "streamType=${audioTrack.streamType}, " +
+                  "channelCount=${audioTrack.channelCount}, " +
+                  "audioFormat=${audioTrack.audioFormat}")
+        }
+    }
+
+    /**
+     * Sets the ADSP_LIBRARY_PATH environment variable to point to the jniLibs folder.
+     * This ensures that native components can locate the required library files.
+     * 
+     * @param context Android context
+     * @return true if the environment variable was set successfully, false otherwise
+     */
+    fun setAdspLibraryPath(context: Context): Boolean {
+        // Delegate to our new NativeHelper class
+        return NativeHelper.setAdspLibraryPath(context)
     }
 }

@@ -12,6 +12,9 @@ build
 # TTS
 app/src/main/java/com/edgeai/chatappv2/Tts.kt
 
+# QNN
+app/src/main/java/com/edgeai/chatappv2/Qnn.kt
+
 # Models
 app/src/main/assets/models/**
 !app/src/main/assets/models/.gitkeep

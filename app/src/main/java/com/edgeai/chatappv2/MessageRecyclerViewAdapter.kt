@@ -2,6 +2,10 @@ package com.edgeai.chatappv2
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +45,13 @@ class MessageRecyclerViewAdapter(
     private var streamingTtsBuffer = StringBuilder()
     private var isStreamingTts = false
     private var streamingSpeechJob: Job? = null
+
+    // Implement these variables inside the class
+    private val audioManager by lazy { 
+        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager 
+    }
+    private var audioFocusRequest: AudioFocusRequest? = null
+    private var audioFocusGranted = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val inflater = LayoutInflater.from(context)
@@ -457,6 +468,9 @@ class MessageRecyclerViewAdapter(
         // Reset state
         isStreamingTts = false
         streamingTtsBuffer.clear()
+        
+        // Release audio focus
+        abandonAudioFocus()
     }
 
     /**
@@ -515,6 +529,9 @@ class MessageRecyclerViewAdapter(
         TtsEngine.trackState = true  // Signal to stop
         TtsEngine.trackStop()
         
+        // Abandon audio focus
+        abandonAudioFocus()
+        
         // Make sure channel is closed safely
         scope.launch {
             try {
@@ -526,9 +543,136 @@ class MessageRecyclerViewAdapter(
     }
     
     /**
+     * Request audio focus for TTS playback
+     * @return true if focus was granted, false otherwise
+     */
+    private fun requestAudioFocus(): Boolean {
+        try {
+            // Check for existing focus
+            if (audioFocusGranted) {
+                return true
+            }
+
+            // Create listener
+            val focusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+                when (focusChange) {
+                    AudioManager.AUDIOFOCUS_LOSS -> {
+                        Log.d(TAG, "Audio focus lost - stopping TTS")
+                        stopTts()
+                        audioFocusGranted = false
+                    }
+                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                        Log.d(TAG, "Audio focus lost temporarily - pausing TTS")
+                        // Just pause, don't reset
+                        TtsEngine.trackPause()
+                        audioFocusGranted = false
+                    }
+                    AudioManager.AUDIOFOCUS_GAIN -> {
+                        Log.d(TAG, "Audio focus gained")
+                        audioFocusGranted = true
+                    }
+                }
+            }
+
+            // Request focus
+            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build()
+                    )
+                    .setWillPauseWhenDucked(false)
+                    .setOnAudioFocusChangeListener(focusChangeListener)
+                    .build()
+                
+                audioFocusRequest = focusRequest
+                audioManager.requestAudioFocus(focusRequest)
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.requestAudioFocus(
+                    focusChangeListener,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                )
+            }
+
+            // Check result
+            val success = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+            audioFocusGranted = success
+            Log.d(TAG, "Audio focus request ${if (success) "granted" else "denied"}")
+            return success
+        } catch (e: Exception) {
+            Log.e(TAG, "Error requesting audio focus: ${e.message}")
+            return true  // Continue anyway
+        }
+    }
+
+    /**
+     * Release audio focus when done with TTS
+     */
+    private fun abandonAudioFocus() {
+        try {
+            if (!audioFocusGranted) {
+                return
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                audioFocusRequest?.let {
+                    audioManager.abandonAudioFocusRequest(it)
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.abandonAudioFocus(null)
+            }
+            
+            audioFocusGranted = false
+            Log.d(TAG, "Audio focus abandoned")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error abandoning audio focus: ${e.message}")
+        }
+    }
+
+    /**
+     * Ensure the system volume is at an audible level
+     */
+    private fun ensureAudibleVolume() {
+        try {
+            // Get current volume settings
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+            val volumePercent = (currentVolume.toFloat() / maxVolume.toFloat() * 100).toInt()
+            
+            Log.d(TAG, "Current volume: $currentVolume/$maxVolume ($volumePercent%)")
+            
+            // If volume is critically low, raise it slightly for better audibility
+            if (currentVolume == 0) {
+                Log.w(TAG, "Volume is zero, adjusting to minimum audible level")
+                
+                // Set to approximately 20% of max volume to ensure it's audible but not too loud
+                val targetVolume = (0.2 * maxVolume).toInt().coerceAtLeast(1)
+                audioManager.setStreamVolume(
+                    AudioManager.STREAM_MUSIC, 
+                    targetVolume, 
+                    AudioManager.FLAG_SHOW_UI
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking volume: ${e.message}")
+        }
+    }
+
+    /**
      * Initialize the streaming TTS system
      */
     private fun initStreamingTts() {
+        // Request audio focus
+        requestAudioFocus()
+        
+        // Check and adjust volume if needed
+        ensureAudibleVolume()
+        
         // Reset TTS engine state
         TtsEngine.trackState = false
         
