@@ -11,6 +11,19 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 </pre>
 </div>
 
+<div align="center">
+  <a href="https://mjnong.github.io/chatapp-v2/assets/chatappv2.mp4">
+    <img src="https://img.shields.io/badge/Watch%20Demo-ChatApp%20V2%20with%20Llama%203.2-blue?style=for-the-badge&logo=github" alt="Watch ChatApp V2 Demo"/>
+  </a>
+</div>
+
+<div align="center">
+  <a href="https://mjnong.github.io/chatapp-v2/assets/realtimetts.mp4">
+    <img src="https://img.shields.io/badge/Watch%20Demo-Real--time%20TTS%20Feature-orange?style=for-the-badge&logo=github" alt="Watch Real-time TTS Demo"/>
+  </a>
+</div>
+
+
 ## 📲 Install App
 
 1. Download `.apk`
@@ -27,21 +40,27 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
    pm install -r /data/local/tmp/ChatApp.apk
    ```
 
-## 📱 Verified Devices
+## Verified
+
+<details>
+<summary>📱  Devices</summary>
 
 <div align="center">
-  
+    
 | Device | OS |
 |--------|------|
 | Samsung Galaxy S25 Ultra | One UI 6.1 (Android 15) |
 
 </div>
 
-## 🧠 Verified Models
+</details>
+
+<details>
+<summary>🧠  Models</summary>
 
 <div align="center">
 
-| Component       | Model/Device                   | OS / Context Length           |
+| Component       | Model/Device                   | Context Length                |
 |-----------------|--------------------------------|-------------------------------|
 | LLM             | Llama 3.2 3B                   | 2048                          |
 | STT             | Whisper Tiny                   | –                             |
@@ -49,11 +68,12 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 
 </div>
 
-💡 If you have a listed device, update to the specified OS version or newer to run the Sample App locally.
+</details>
 
-## 🛠️ Requirements
+### 🛠️ Builds
 
-### Platform
+<details>
+<summary>Requirements</summary>
 
 - Snapdragon® Gen 3 or Snapdragon® 8 Elite
 - QNN SDK version 2.31.0 or newer
@@ -64,8 +84,10 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
   ```
 
 
+</details>
 
-## 📁 Important Paths
+<details>
+<summary>Important Paths</summary>
 
 - 🔧 `/opt/qcom/aistack/qairt/2.31.0`: Example QNN-SDK location
 - 📚 `/opt/qcom/aitstack/qairt/2.31.0/lib/external`: WhisperKit Android `.so` files
@@ -75,7 +97,7 @@ This repo contains a full voice assistant pipeline optimized for Qualcomm NPU.
 - 📊 `app/src/main/assets/models`: LLM models location
 - ⚙️ `app/src/main/assets/htp_config`: HTP config files location
 
-### Builds
+</details>
 
 <details>
 <summary>WhisperKit Android</summary>
@@ -231,33 +253,6 @@ ls -la /opt/qcom/aitstack/qairt/2.31.0/lib/external/
 For more information, refer to the [Sherpa-ONNX documentation](https://github.com/k2-fsa/sherpa-onnx)
 
 </details>
-
-## 📱 Demo Videos
-
-### App Showcase
-
-<div align="center">
-  <a href="https://mjnong.github.io/chatapp-v2/assets/chatappv2.mp4">
-    <img src="https://img.shields.io/badge/Watch%20Demo-ChatApp%20V2%20with%20Llama%203.2-blue?style=for-the-badge&logo=github" alt="Watch ChatApp V2 Demo"/>
-  </a>
-</div>
-
-Experience ChatApp V2 in action, featuring:
-- Conversational interactions with Llama 3.2 3B
-- Customizable voice settings (speed and speaker selection)
-- On-device processing using the Snapdragon® NPU
-
-### Real-time TTS Feature
-
-<div align="center">
-  <a href="https://mjnong.github.io/chatapp-v2/assets/realtimetts.mp4">
-    <img src="https://img.shields.io/badge/Watch%20Demo-Real--time%20TTS%20Feature-orange?style=for-the-badge&logo=github" alt="Watch Real-time TTS Demo"/>
-  </a>
-</div>
-
-The real-time TTS feature provides:
-- Instant voice feedback as the model generates text
-- Natural-sounding speech with sentence-level processing
 
 ## 📄 License
 
