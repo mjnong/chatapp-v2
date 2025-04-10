@@ -189,7 +189,7 @@ jobs:
           path: cached_libs/
 
   build-app:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [ build-whisperkit, sherpa-build, download-whisperkit-models ]
     strategy:
       matrix:
