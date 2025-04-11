@@ -19,7 +19,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_edgeai_chatappv2_GenieWrapper_loadMo
     {
         std::string model_dir = std::string(env->GetStringUTFChars(model_dir_path, 0));
         std::string htp_config = std::string(env->GetStringUTFChars(htp_config_path, 0));
-        std::filesystem::path model_config_path = std::filesystem::path(model_dir) / "genie-config.json";
+        std::filesystem::path model_config_path = std::filesystem::path(model_dir) / "genie_config.json";
         std::filesystem::path tokenizer_path = std::filesystem::path(model_dir) / "tokenizer.json";
 
         App::GenieWrapper* chatApp =
