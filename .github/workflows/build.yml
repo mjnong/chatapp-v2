@@ -280,9 +280,13 @@ jobs:
           ls qairt/2.31.0/lib/external
 
           # .bin models, tokenizer, genie config
+          echo "Downloading Llama assets"
           gh release download v0.0.1 -p '*.bin' --dir app/src/main/assets/models/llama3_2_3b
+          echo "Succesfully downloaded model binaries"
           gh release download v0.0.1 -p 'tokenizer.json' --dir app/src/main/assets/models/llama3_2_3b
+          echo "Succesfully downloaded tokenizer"
           gh release download v0.0.1 -p 'genie_config.json' --dir app/src/main/assets/models/llama3_2_3b
+          echo "Succesfully downloaded genie_config.json"
 
           # hexagon config
           gh release download v0.0.1 -p 'htp_backend_ext_config.json' --dir app/src/main/assets/htp_config
