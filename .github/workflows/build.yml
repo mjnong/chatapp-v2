@@ -291,10 +291,10 @@ jobs:
           echo "Contents of app/src/main/assets/models"
           ls app/src/main/assets/models
 
-          cp cached_libs/libonnxruntime.so /home/runner/work/chatapp-v2/chatapp-v2/qairt/2.31.0/lib/external/
-          cp cached_libs/libsherpa-onnx-jni.so /home/runner/work/chatapp-v2/chatapp-v2/qairt/2.31.0/lib/external/
-          ls -la /home/runner/work/chatapp-v2/chatapp-v2/qairt/2.31.0/lib/external/
-          ln -s /home/runner/work/chatapp-v2/chatapp-v2/sherpa-onnx-qnn/sherpa-onnx/kotlin-api/Tts.kt /home/runner/work/chatapp-v2/chatapp-v2/app/src/main/java/com/edgeai/chatappv2/Tts.kt
+          cp cached_libs/libonnxruntime.so qairt/2.31.0/lib/external/
+          cp cached_libs/libsherpa-onnx-jni.so qairt/2.31.0/lib/external/
+          ls -la qairt/2.31.0/lib/external/
+          ln -s sherpa-onnx-qnn/sherpa-onnx/kotlin-api/Tts.kt app/src/main/java/com/edgeai/chatappv2/Tts.kt
 
 
       - name: Build app
